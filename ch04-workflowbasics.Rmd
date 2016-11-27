@@ -1,0 +1,58 @@
+---
+title: "Chapter 4: Workflow - Basics"
+output: html_notebook
+---
+
+# 4.4 Practice
+
+1. Why does this code not work?
+
+```{r}
+my_variable <- 10
+my_varıable
+```
+
+**The second line has a character in the variable name different from the first line - `i` vs `ı`
+
+```{r}
+my_variable <- 10
+my_variable
+```
+
+2. Tweak each of the following R commands so that they run correctly:
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+ggplot(dota = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy))
+```
+
+**Fix the typo in `data`**
+
+```{r}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy))
+```
+
+```{r}
+fliter(mpg, cyl = 8)
+```
+
+**Fix the typo in `filter` and add a second equals sign to the condition check**
+
+```{r}
+filter(mpg, cyl == 8)
+```
+
+```{r}
+filter(diamond, carat > 3)
+```
+
+**Fix the typo in `diamonds`**
+
+```{r}
+filter(diamonds, carat > 3)
+```
