@@ -1,0 +1,172 @@
+---
+title: "Chapter 5: Data Transformation"
+output: html_notebook
+---
+
+```{r}
+library(nycflights13)
+library(tidyverse)
+```
+
+# 5.2 Filter rows with `filter()`
+
+## 5.2.4 Exercises
+
+1. Find all flights that:
+
+a. Had an arrival delay of two or more hours
+
+```{r}
+filter(flights, arr_delay >= 120)
+```
+
+b. Flew to Houston (IAH or HOU)
+
+```{r}
+filter(flights, dest %in% c("IAH", "HOU"))
+```
+
+c. Were operated by United, American, or Delta
+
+```{r}
+airlines
+filter(flights, carrier %in% c("UA", "AA", "DL"))
+```
+
+d. Departed in summer (July, August, and September)
+
+```{r}
+filter(flights, month %in% c(7, 8, 9))
+```
+
+e. Arrived more than two hours late, but didn’t leave late
+
+```{r}
+filter(flights, arr_delay > 120, dep_delay <= 0)
+```
+
+f. Were delayed by at least an hour, but made up over 30 minutes in flight
+
+```{r}
+filter(flights, arr_delay >= 60, arr_delay - dep_delay < -30)
+```
+
+g. Departed between midnight and 6am (inclusive)
+
+```{r}
+filter(flights, dep_time <= 600 | dep_time == 2400)
+```
+
+2. Another useful dplyr filtering helper is `between()`. What does it do? Can you use it to simplify the code needed to answer the previous challenges?
+
+**`between()` returns items that arehave a variable value between two boundary values (inclusive, ie it tests for `>=` and `<=` on the left and right boundaries).**
+
+d. Departed in summer (July, August, and September)
+
+```{r}
+filter(flights, between(month, 7, 9))
+```
+
+3. How many flights have a missing `dep_time`? What other variables are missing? What might these rows represent?
+
+```{r}
+filter(flights, is.na(dep_time))
+```
+
+**These rows are also missing `dep_delay`, `arr_time`, `arr_delay` and `air_time`. Given that they have all the scheduled details but are missing all actual flight data, these rows appear to represent cancelled flights.**
+
+4. Why is `NA ^ 0` not missing? Why is `NA | TRUE` not missing? Why is `FALSE & NA` not missing? Can you figure out the general rule? (`NA * 0` is a tricky counterexample!)
+
+```{r}
+NA ^ 0
+NA | TRUE
+NA | FALSE # Counter-example
+FALSE & NA
+TRUE & NA # Counter-example
+NA * 0
+```
+
+**`NA ^ 0` is not missing because any value to the power of zero equals 1 (although I don't have an explanation right now why the same principle doesn't apply for `NA * 0`). `NA | TRUE` is not missing because only one side of the 'or' operator needs to evaluate as true (conversely, note that `NA | FALSE` is missing). `FALSE & NA` is not missing because both sides of the 'and' operator would need to evaluate TRUE for it to be true so based on the right-hand side it would be false regardless of the actual value of the `NA` (conversely, note that `TRUE & NA` is missing).**
+
+# 5.3 Arrange rows with `arrange()`
+
+## 5.3.1 Exercises
+
+1. How could you use `arrange()` to sort all missing values to the start? (Hint: use `is.na()`).
+
+**Using `dep_time` as an example.**
+
+```{r}
+arrange(flights, desc(is.na(dep_time)))
+```
+
+2. Sort flights to find the most delayed flights. Find the flights that left earliest.
+
+```{r}
+arrange(flights, desc(arr_delay), dep_delay)
+```
+
+3. Sort flights to find the fastest flights.
+
+```{r}
+arrange(flights, air_time)
+```
+
+4. Which flights travelled the longest? Which travelled the shortest?
+
+```{r}
+arrange(flights, desc(distance))
+```
+
+```{r}
+arrange(flights, distance)
+```
+
+# 5.4 Select columns with `select()`
+
+## 5.4.1 Exercises
+
+1. Brainstorm as many ways as possible to select `dep_time`, `dep_delay`, `arr_time`, and `arr_delay` from flights.
+
+```{r}
+select(flights, dep_time, dep_delay, arr_time, arr_delay)
+```
+
+```{r}
+select(flights, 4, 6, 7, 9)
+```
+
+```{r}
+select(flights, starts_with("dep_"), starts_with("arr_"))
+```
+
+**Could keep going with a minus operator to drop all of the other columns, etc.**
+
+2. What happens if you include the name of a variable multiple times in a `select()` call?
+
+```{r}
+select(flights, dep_time, dep_time)
+```
+
+**It doesn't duplicate the variable.**
+
+3. What does the `one_of()` function do? Why might it be helpful in conjunction with this vector?
+
+**It allows selection of variables by matching against a vector of strongs. In the code below I've used it to select all of the variables that _aren't_ listed in the vector.**
+
+```{r}
+vars <- c("year", "month", "day", "dep_delay", "arr_delay")
+select(flights, -one_of(vars))
+```
+
+4. Does the result of running the following code surprise you? How do the `select` helpers deal with case by default? How can you change that default?
+
+```{r}
+select(flights, contains("TIME"))
+```
+
+**By default the `select` helpers are case-insensitive. It can be modified by passing the argument `ignore.case = FALSE`.**
+
+```{r}
+select(flights, contains("TIME", ignore.case = FALSE))
+```
