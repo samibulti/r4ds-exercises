@@ -59,7 +59,7 @@ filter(flights, dep_time <= 600 | dep_time == 2400)
 
 2. Another useful dplyr filtering helper is `between()`. What does it do? Can you use it to simplify the code needed to answer the previous challenges?
 
-**`between()` returns items that arehave a variable value between two boundary values (inclusive, ie it tests for `>=` and `<=` on the left and right boundaries).**
+**`between()` returns items that have a variable value between two boundary values (inclusive, ie it tests for `>=` and `<=` on the left and right boundaries).**
 
 d. Departed in summer (July, August, and September)
 
@@ -169,4 +169,201 @@ select(flights, contains("TIME"))
 
 ```{r}
 select(flights, contains("TIME", ignore.case = FALSE))
+```
+
+# 5.5 Add new variables with `mutate()`
+
+## 5.5.2 Exercises
+
+1. Currently `dep_time` and `sched_dep_time` are convenient to look at, but hard to compute with because they’re not really continuous numbers. Convert them to a more convenient representation of number of minutes since midnight.
+
+```{r}
+mutate(
+  flights,
+  dep_time_min = ((dep_time %/% 100) * 60) + (dep_time %% 100),
+  sched_dep_time_min = ((sched_dep_time %/% 100) * 60) + (sched_dep_time %% 100)
+)
+```
+
+2. Compare `air_time` with `arr_time - dep_time`. What do you expect to see? What do you see? What do you need to do to fix it?
+
+**I would expect that `air_time = arr_time - dep_time`.**
+
+```{r}
+mutate(
+  flights,
+  diff_time = arr_time - dep_time
+)
+```
+
+**This isn't correct. The first problem is the issue with the way hours-and-minutes expressions of the time are entered into a single variable, which can be addressed as in the previous exercise.**
+
+```{r}
+mutate(
+  flights,
+  dep_time_min = ((dep_time %/% 100) * 60) + (dep_time %% 100),
+  arr_time_min = ((arr_time %/% 100) * 60) + (arr_time %% 100),
+  diff_time = arr_time_min - dep_time_min
+)
+```
+
+**Most of the times still don't match up. The documentation for the dataset indicates that the arrival and departure times are based on local timezones, so that is one clear remaining complication that couldn't be resolved without performing timezone conversions based on origin and destination, but I don't think that is the full explanation of why there isn't a match. I'm setting this one aside at this point and might try to come back to it.**
+
+3. Compare `dep_time`, `sched_dep_time`, and `dep_delay`. How would you expect those three numbers to be related?
+
+**I would expect that `dep_delay = dep_time - sched_dep_time`. Let's test it out.**
+
+```{r}
+mutate(
+  flights,
+  dep_diff = dep_time - sched_dep_time
+)
+```
+
+**This works in some cases but not universally, again because the times are expressed as a 24-hour time value but in a single variable rather than separating hours and days. Transforming those times into minutes since midnight should fix that.**
+
+```{r}
+mutate(
+  flights,
+  dep_time_min = ((dep_time %/% 100) * 60) + (dep_time %% 100),
+  sched_dep_time_min = ((sched_dep_time %/% 100) * 60) + (sched_dep_time %% 100),
+  dep_diff = dep_time_min - sched_dep_time_min
+)
+```
+
+**That appears to work for most cases, except it fails where there was a delay that saw a flight delayed past midnight and into the next day.**
+
+4. Find the 10 most delayed flights using a ranking function. How do you want to handle ties? Carefully read the documentation for `min_rank()`.
+
+```{r}
+mutate(
+  flights,
+  delay_rank = min_rank(desc(dep_delay))
+) %>%
+  arrange(delay_rank)
+```
+
+**It makes sense for ties to be ranked equally, e.g., three flights are tied for the 12th longest delay, while the next item takes into account the number of items ranked ahead of it rather than just the number of values, e.g., the next ranked item is 15th because 14 flights were delayed longer than it. This is the default behaviour of `min_rank` which the help describes as equivalent to `rank(ties.method = "min")`.**
+
+5. What does `1:3 + 1:10` return? Why?
+
+```{r}
+1:3 + 1:10
+```
+
+**The addition operator is vectorised with recycling, so the first (3-item) vector repeats itself through until it matches the second (10-item) vector, i.e., it ends up being equivalent to `c(1, 2, 3, 1, 2, 3, 1, 2, 3, 1) + c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)`.**
+
+6. What trigonometric functions does R provide?
+
+**See `?Trig` for info on the package with the main trigonometry functions: `cos()`, `sin()`, `tan()`, `acos()`, `asin()`, `atan()`, `atan2()`, `cospi()`, `sinpi()` and `tanpi()`.**
+
+# 5.6 Grouped summaries with `summarise()`
+
+## 5.6.7 Exercises
+
+1. Brainstorm at least 5 different ways to assess the typical delay characteristics of a group of flights. Consider the following scenarios:
+
+- A flight is 15 minutes early 50% of the time, and 15 minutes late 50% of the time.
+
+- A flight is always 10 minutes late.
+
+- A flight is 30 minutes early 50% of the time, and 30 minutes late 50% of the time.
+
+- 99% of the time a flight is on time. 1% of the time it’s 2 hours late.
+
+Which is more important: arrival delay or departure delay?
+
+2. Come up with another approach that will give you the same output as `not_cancelled %>% count(dest)` and `not_cancelled %>% count(tailnum, wt = distance)` (without using count()).
+
+```{r}
+not_cancelled <- flights %>% 
+  filter(!is.na(dep_delay), !is.na(arr_delay))
+# Equivalent to not_cancelled %>% count(dest):
+not_cancelled %>%
+  group_by(dest) %>%
+  summarise(n())
+# Equivalent to not_cancelled %>% count(tailnum, wt = distance):
+not_cancelled %>%
+  group_by(tailnum) %>%
+  summarise(n = sum(distance))
+```
+
+3. Our definition of cancelled flights `(is.na(dep_delay) | is.na(arr_delay) )` is slightly suboptimal. Why? Which is the most important column?
+
+4. Look at the number of cancelled flights per day. Is there a pattern? Is the proportion of cancelled flights related to the average delay?
+
+```{r}
+flights %>%
+  group_by(year, month, day) %>%
+  summarise(
+    n_cancelled = sum(is.na(dep_time))
+  ) %>%
+  ggplot(mapping = aes(x = n_cancelled)) +
+  geom_bar()
+```
+
+**Most days have a relatively small number of flights cancelled and there are some infrequent days where many flights are cancalled.**
+
+```{r}
+flights %>%
+  group_by(year, month, day) %>%
+  summarise(
+    prop_cancelled = mean(is.na(dep_time)),
+    mean_delay = mean(dep_delay, na.rm = TRUE)
+  ) %>%
+  ggplot(mapping = aes(x = mean_delay, y = prop_cancelled)) +
+  geom_point() +
+  geom_smooth()
+```
+
+**There are some unusual days but the general pattern is that days with longer delays also tend to have a greater proportion of flights cancelled.**
+
+5. Which carrier has the worst delays? Challenge: can you disentangle the effects of bad airports vs. bad carriers? Why/why not? (Hint: think about `flights %>% group_by(carrier, dest) %>% summarise(n())`)
+
+```{r}
+airline_delays <- flights %>%
+  group_by(carrier) %>%
+  summarise(
+    mean_delay = mean(arr_delay, na.rm = TRUE),
+    n_flights = n()
+  ) %>%
+  arrange(desc(mean_delay))
+airline_delays
+```
+
+**Frontier (F9) and AirTran (FL) are the two with the highest mean arrival delays but note that they have a relatively low number of flights (in the hundreds and thousands, respectively). Of airlines that have tens of thousands of flights, ExpressJet (EV) has mean delays 5 minutes longer than other airlines. (Note that carrier codes can be matched to airline names in the `airlines` data file.)**
+
+```{r}
+ggplot(data = airline_delays) +
+  geom_point(mapping = aes(x = n_flights, y = mean_delay))
+```
+
+```{r}
+airline_dest_delays <- flights %>%
+  group_by(carrier, dest) %>%
+  summarise(
+    mean_delay = mean(arr_delay, na.rm = TRUE),
+    n_flights = n()
+  ) %>%
+  arrange(desc(mean_delay))
+airline_dest_delays
+```
+
+**In attempting to disentangle carrier vs airport issues, some of the combinations of carrier and airport have a very small number of flights and should be interpreted with caution.**
+
+```{r}
+ggplot(data = airline_dest_delays) +
+  geom_point(mapping = aes(x = n_flights, y = mean_delay), alpha = 2/10)
+```
+
+**I might come back and explore the data some more to see what conclusions can be drawn with the volatile small subsamples removed.**
+
+6. For each plane, count the number of flights before the first delay of greater than 1 hour.
+
+7. What does the sort argument to `count()` do. When might you use it?
+
+**If `sort = TRUE` then the `count()` function arranges its output in descending order. I would use it when you want to find the most frequent values, as it saves piping the `count()` results into an `arrange()` call.**
+
+```{r}
+not_cancelled %>% count(dest, sort = TRUE)
 ```
