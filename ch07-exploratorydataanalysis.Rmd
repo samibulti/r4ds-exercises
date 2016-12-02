@@ -1,0 +1,83 @@
+---
+title: "Chapter 7: Exploratory Data Analysis"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+```
+
+# 7.3 Variation
+
+## 7.3.4 Exercises
+
+1. Explore the distribution of each of the `x`, `y`, and `z` variables in diamonds. What do you learn? Think about a diamond and how you might decide which dimension is the length, width, and depth.
+
+```{r}
+ggplot(data = diamonds) +
+  geom_histogram(mapping = aes(x = x), binwidth = 0.5) +
+  coord_cartesian(xlim = c(0, 12), ylim = c(0, 30000))
+ggplot(data = diamonds) +
+  geom_histogram(mapping = aes(x = y), binwidth = 0.5) +
+  coord_cartesian(xlim = c(0, 12), ylim = c(0, 30000))
+ggplot(data = diamonds) +
+  geom_histogram(mapping = aes(x = z), binwidth = 0.5) +
+  coord_cartesian(xlim = c(0, 12), ylim = c(0, 30000))
+```
+
+**`x` and `y` are similarly distributed in terms of values, while `z` tends to have lower values and less variability than the other two dimensions. When measuring you would probably treat the longest dimensions as width and height and then the third dimension would become depth and be measured last.**
+
+2. Explore the distribution of `price`. Do you discover anything unusual or surprising? (Hint: Carefully think about the `binwidth` and make sure you try a wide range of values.)
+
+```{r}
+ggplot(data = diamonds) +
+  geom_histogram(mapping = aes(x = price))
+ggplot(data = diamonds) +
+  geom_histogram(mapping = aes(x = price),  binwidth = 500)
+ggplot(data = diamonds) +
+  geom_histogram(mapping = aes(x = price),  binwidth = 100)
+ggplot(data = diamonds) +
+  geom_histogram(mapping = aes(x = price),  binwidth = 50)
+ggplot(data = diamonds) +
+  geom_histogram(mapping = aes(x = price),  binwidth = 10)
+ggplot(data = diamonds) +
+  geom_histogram(mapping = aes(x = price),  binwidth = 10) +
+  coord_cartesian(xlim = c(1000, 2000))
+```
+
+**The general distribution shows that the most common prices are relatively low (most common price is around \$1,000), and higher-priced diamonds become increasingly rare. But there is also an unusual part of the distribution around \$1,500 where no diamonds fall into that price range.**
+
+3. How many diamonds are 0.99 carat? How many are 1 carat? What do you think is the cause of the difference?
+
+```{r}
+diamonds %>%
+  filter(between(carat, 0.99, 1.0)) %>%
+  count(carat)
+```
+
+**There are many more 1 carat diamonds. This could just be rounding or lack of precision in measuring, but it seems likely that it would be more appealing to classify diamonds as 1 carat because they would be more marketable.**
+
+4. Compare and contrast `coord_cartesian()` vs `xlim()` or `ylim()` when zooming in on a histogram. What happens if you leave binwidth unset? What happens if you try and zoom so only half a bar shows?
+
+```{r}
+ggplot(data = diamonds) +
+  geom_histogram(mapping = aes(x = price),  binwidth = 10) +
+  coord_cartesian(xlim = c(1000, 2000))
+ggplot(data = diamonds) +
+  geom_histogram(mapping = aes(x = price),  binwidth = 10) +
+  xlim(1000, 2000)
+ggplot(data = diamonds) +
+  geom_histogram(mapping = aes(x = price)) +
+  coord_cartesian(xlim = c(1000, 2000))
+ggplot(data = diamonds) +
+  geom_histogram(mapping = aes(x = price)) +
+  xlim(1000, 2000)
+ggplot(data = diamonds) +
+  geom_histogram(mapping = aes(x = price),  binwidth = 100) +
+  coord_cartesian(xlim = c(1000, 1050))
+ggplot(data = diamonds) +
+  geom_histogram(mapping = aes(x = price),  binwidth = 100) +
+  xlim(1000, 1050)
+```
+
+**Note that `xlim()` removes rows from the dataset that is being plotted, while `coord_cartesian()` keeps the full dataset but then only plots a limited range. If you leave `binwidth` unset then this means `coord_cartesian` will use default binwidths based on the full range of data but `xlim()` will break up the range that has been left in the data. And if you try to zoom so that only half a bar shows then `coord_artesian` will display the half-bar but `xlim()` doesn't because it no longer has the correct range of data to plot that bar.**
