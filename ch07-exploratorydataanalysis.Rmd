@@ -81,3 +81,138 @@ ggplot(data = diamonds) +
 ```
 
 **Note that `xlim()` removes rows from the dataset that is being plotted, while `coord_cartesian()` keeps the full dataset but then only plots a limited range. If you leave `binwidth` unset then this means `coord_cartesian` will use default binwidths based on the full range of data but `xlim()` will break up the range that has been left in the data. And if you try to zoom so that only half a bar shows then `coord_artesian` will display the half-bar but `xlim()` doesn't because it no longer has the correct range of data to plot that bar.**
+
+# 7.4 Missing values
+
+## 7.4.1 Exercises
+
+```{r}
+diamonds2 <- diamonds %>% 
+  mutate(y = ifelse(y < 3 | y > 20, NA, y))
+```
+
+1. What happens to missing values in a histogram? What happens to missing values in a bar chart? Why is there a difference?
+
+```{r}
+ggplot(data = diamonds2) +
+  geom_histogram(mapping = aes(x = y))
+```
+
+```{r}
+ggplot(data = diamonds2) +
+  geom_bar(mapping = aes(x = y))
+```
+
+**This needs more examination. Might come back to it.**
+
+2. What does `na.rm = TRUE` do in `mean()` and `sum()`?
+
+```{r}
+diamonds2 %>%
+  summarise(mean(y), sum(y))
+```
+
+```{r}
+diamonds2 %>%
+  summarise(mean(y, na.rm = TRUE), sum(y, na.rm = TRUE))
+```
+
+**`na.rm = TRUE` removes missing values and calculates means and sums based on the set of non-missing values in the variable.**
+
+# 7.5 Covariation
+
+## 7.5.1 A categorical and continuous variable
+
+### 7.5.1.1 Exercises
+
+1. Use what you’ve learned to improve the visualisation of the departure times of cancelled vs. non-cancelled flights.
+
+```{r}
+nycflights13::flights %>% 
+  mutate(
+    cancelled = is.na(dep_time),
+    sched_hour = sched_dep_time %/% 100,
+    sched_min = sched_dep_time %% 100,
+    sched_dep_time = sched_hour + sched_min / 60
+  ) %>%
+  ggplot(mapping = aes(x = sched_dep_time, y = ..density..)) +
+  geom_freqpoly(aes(colour = cancelled))
+  
+```
+
+**This suggests that the proportion of flights cancelled tends to increase later in the day, especially with scheduled departure times from 3pm onward.**
+
+2. What variable in the diamonds dataset is most important for predicting the price of a diamond? How is that variable correlated with cut? Why does the combination of those two relationships lead to lower quality diamonds being more expensive?
+
+```{r}
+ggplot(data = diamonds) +
+  geom_point(mapping = aes(x = carat, y = price))
+ggplot(data = diamonds) +
+  geom_point(mapping = aes(x = cut, y = price))
+ggplot(data = diamonds) +
+  geom_point(mapping = aes(x = color, y = price))
+ggplot(data = diamonds) +
+  geom_point(mapping = aes(x = clarity, y = price))
+ggplot(data = diamonds) +
+  geom_point(mapping = aes(x = x, y = price))
+ggplot(data = diamonds) +
+  geom_point(mapping = aes(x = y, y = price))
+ggplot(data = diamonds) +
+  geom_point(mapping = aes(x = z, y = price))
+ggplot(data = diamonds) +
+  geom_point(mapping = aes(x = depth, y = price))
+ggplot(data = diamonds) +
+  geom_point(mapping = aes(x = table, y = price))
+```
+
+**Higher carat diamonds tend to hace higher prices.**
+
+```{r}
+ggplot(data = diamonds) +
+  geom_boxplot(aes(x = cut, y = carat))
+```
+
+**Higher carat diamonds are more common in the lower-quality classes of cut, which appears to explain why low-quality cut diamonds tend to have higher prices.**
+
+3. Install the ggstance package, and create a horizontal boxplot. How does this compare to using `coord_flip()`?
+
+```{r}
+library(ggstance)
+ggplot(data = mpg) +
+  geom_boxploth(mapping = aes(x = reorder(class, hwy, FUN = median), y = hwy))
+ggplot(data = mpg) +
+  geom_boxploth(mapping = aes(y = reorder(class, hwy, FUN = median), x = hwy))
+```
+
+**The key difference is that with ggstance you assign to the `y` axis the variable that would be assigned to the `x` axis before applying `coord_flip()`, and vice versa. In other words, ggstance maps directly onto the axes as they will appear in the horizontal plot.**
+
+4. One problem with boxplots is that they were developed in an era of much smaller datasets and tend to display a prohibitively large number of “outlying values”. One approach to remedy this problem is the letter value plot. Install the lvplot package, and try using `geom_lv()` to display the distribution of price vs cut. What do you learn? How do you interpret the plots?
+
+```{r}
+library(lvplot)
+ggplot(data = diamonds, mapping = aes(x = cut, y = price)) +
+  geom_lv()
+```
+
+**There appears to be a package conflict that will need to be resolved.**
+
+5. Compare and contrast `geom_violin()` with a facetted `geom_histogram()`, or a coloured `geom_freqpoly()`. What are the pros and cons of each method?
+
+```{r}
+ggplot(data = diamonds, mapping = aes(x = cut, y = price)) +
+  geom_violin()
+ggplot(data = diamonds, mapping = aes(x = price)) +
+  geom_histogram() +
+  facet_wrap(~ cut)
+ggplot(data = diamonds, mapping = aes(x = price)) +
+  geom_freqpoly(mapping = aes(colour = cut))
+```
+
+6. If you have a small dataset, it’s sometimes useful to use `geom_jitter()` to see the relationship between a continuous and categorical variable. The ggbeeswarm package provides a number of methods similar to `geom_jitter()`. List them and briefly describe what each one does.
+
+```{r}
+library(ggbeeswarm)
+?ggbeeswarm
+```
+
+**Look at `position_quasirandom()` and `position_beeswarm()`.**
