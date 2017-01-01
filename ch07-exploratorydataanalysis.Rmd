@@ -216,3 +216,44 @@ library(ggbeeswarm)
 ```
 
 **Look at `position_quasirandom()` and `position_beeswarm()`.**
+
+## 7.5.2 Two categorical variables
+
+### 7.5.2.1 Exercises
+
+1. How could you rescale the count dataset above to more clearly show the distribution of cut within colour, or colour within cut?
+
+```{r}
+diamonds %>%
+  group_by(cut, color) %>%
+  summarise(n = n()) %>%
+  mutate(prop = n/sum(n)) %>%
+  ggplot(mapping = aes(x = color, y = cut)) +
+    geom_tile(mapping = aes(fill = prop))
+```
+
+**Calculating the proportion of colours within each cut rather than frequencies allows us to see the distribution of colours within each cut level more clearly.**
+
+2. Use `geom_tile()` together with dplyr to explore how average flight delays vary by destination and month of year. What makes the plot difficult to read? How could you improve it?
+
+```{r}
+library(nycflights13)
+flights %>%
+  group_by(dest, month) %>%
+  summarise(avg_delay = mean(arr_delay, na.rm = TRUE)) %>%
+  ggplot(mapping = aes(x = as.factor(month), y = dest)) +
+    geom_tile(mapping = aes(fill = avg_delay))
+```
+
+**The number of destinations makes the y-axis overcrowded and even with the chart opened in a full-screen window it isn't clearly readable.**
+
+3. Why is it slightly better to use `aes(x = color, y = cut)` rather than `aes(x = cut, y = color)` in the example above?
+
+```{r}
+ggplot(data = diamonds) +
+  geom_count(mapping = aes(x = cut, y = color))
+ggplot(data = diamonds) +
+  geom_count(mapping = aes(x = color, y = cut))
+```
+
+**Having colour on the x-axis narrows the width of the chart which seems to make comparison of points easier.**
