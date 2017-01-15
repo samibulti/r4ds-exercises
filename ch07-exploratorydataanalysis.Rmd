@@ -258,7 +258,6 @@ ggplot(data = diamonds) +
 
 **Having colour on the x-axis narrows the width of the chart which seems to make comparison of points easier.**
 
-
 ## 7.5.3 Two continuous variables
 
 ### 7.5.3.1 Exercises
