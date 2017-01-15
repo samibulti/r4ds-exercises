@@ -5,6 +5,10 @@ output: html_notebook
 
 # 10.5 Exercises
 
+```{r}
+library(tidyverse)
+```
+
 1. How can you tell if an object is a tibble? (Hint: try printing `mtcars`, which is a regular data frame).
 
 ```{r}
