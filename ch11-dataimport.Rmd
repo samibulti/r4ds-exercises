@@ -100,3 +100,86 @@ read_csv("a;b\n1;3")
 ```{r}
 read_csv2("a;b\n1;3")
 ```
+
+# 11.3 Parsing a vector
+
+## 11.3.5 Exercises
+
+1. What are the most important arguments to `locale()`?
+
+```{r}
+?locale
+```
+
+**`decimal_mark` and `grouping_mark` are important for processing of all numeric data. `tz` will be important for any time data to ensure it accurately reflects the local time, and then `date_names`, `date_format` and `time_format` may also be important for processing date and time values. `encoding` is crucial and will be problematic if set wrong for the input file, but in many modern cases the default of UTF-8 will be correct and covers everything.**
+
+2. What happens if you try and set `decimal_mark` and `grouping_mark` to the same character? What happens to the default value of `grouping_mark` when you set `decimal_mark` to “,”? What happens to the default value of `decimal_mark` when you set the `grouping_mark` to “.”?
+
+```{r}
+locale(decimal_mark = ".", grouping_mark = ".")
+```
+
+**If the two arguments try to use the same character an error is thrown - there must be different marks for decimal vs grouping.**
+
+```{r}
+locale(decimal_mark = ",")
+```
+
+**The grouping mark becomes `.`.**
+
+```{r}
+locale(grouping_mark = ".")
+```
+
+**The decimal mark becomes `,`.**
+
+3. I didn’t discuss the `date_format` and `time_format` options to `locale()`. What do they do? Construct an example that shows when they might be useful.
+
+```{r}
+library(hms)
+parse_date("08/09/2010", locale = locale(date_format = "%d/%m/%Y"))
+parse_time("1820", locale = locale(time_format = "%H%M"))
+```
+
+**These options allow you to define the way dates and times are formatted so they can be parsed correctly.**
+
+4. If you live outside the US, create a new locale object that encapsulates the settings for the types of file you read most commonly.
+
+```{r}
+locale(
+  date_names = "en",
+  date_format = "%d/%m/%Y",
+  time_format = "%h:%M%p %Z",
+  decimal_mark = ".",
+  grouping_mark = ",",
+  tz = "Australia/Sydney",
+  encoding = "UTF-8"
+)
+```
+
+5. What’s the difference between `read_csv()` and `read_csv2()`?
+
+**The difference is the delimiting character - `,` in the former, `;` in the latter.**
+
+6. What are the most common encodings used in Europe? What are the most common encodings used in Asia? Do some googling to find out.
+
+**Aside from UTF-8, some of the most commonly used encodings in modern documents (ASCII has become less common in the 21st century) would appear to include the ISO-8859 variants (e.g., ISO-8859-1 in Western Europe), GB18030 in China which is a transformation of Unicode, and the Windows character sets (e.g., Windows-1251 for Cyrillic alphabets and Windows-1252 for Western/Latin). Some stats show that [the vast majority of websites are now using UTF-8](https://w3techs.com/technologies/overview/character_encoding/all) but data files may be a different story.**
+
+7. Generate the correct format string to parse each of the following dates and times:
+
+```{r}
+d1 <- "January 1, 2010"
+d2 <- "2015-Mar-07"
+d3 <- "06-Jun-2017"
+d4 <- c("August 19 (2015)", "July 1 (2015)")
+d5 <- "12/30/14" # Dec 30, 2014
+t1 <- "1705"
+t2 <- "11:15:10.12 PM"
+parse_date(d1, "%B %d, %Y")
+parse_date(d2, "%Y-%b-%d")
+parse_date(d3, "%d-%b-%Y")
+parse_date(d4, "%B %d (%Y)")
+parse_date(d5, "%m/%d/%y")
+parse_time(t1, "%H%M")
+parse_time(t2, "%I:%M:%OS %p")
+```

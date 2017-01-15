@@ -373,10 +373,208 @@ row col                     expected    actual
 </div>
 <!-- rnb-frame-end -->
 <!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+</div>
+</div>
+<div id="parsing-a-vector" class="section level1">
+<h1>11.3 Parsing a vector</h1>
+<div id="exercises-1" class="section level2">
+<h2>11.3.5 Exercises</h2>
+<ol style="list-style-type: decimal">
+<li>What are the most important arguments to <code>locale()</code>?</li>
+</ol>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuP2xvY2FsZVxuYGBgIn0= -->
+<pre class="r"><code>?locale</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p><strong><code>decimal_mark</code> and <code>grouping_mark</code> are important for processing of all numeric data. <code>tz</code> will be important for any time data to ensure it accurately reflects the local time, and then <code>date_names</code>, <code>date_format</code> and <code>time_format</code> may also be important for processing date and time values. <code>encoding</code> is crucial and will be problematic if set wrong for the input file, but in many modern cases the default of UTF-8 will be correct and covers everything.</strong></p>
+<ol start="2" style="list-style-type: decimal">
+<li>What happens if you try and set <code>decimal_mark</code> and <code>grouping_mark</code> to the same character? What happens to the default value of <code>grouping_mark</code> when you set <code>decimal_mark</code> to “,”? What happens to the default value of <code>decimal_mark</code> when you set the <code>grouping_mark</code> to “.”?</li>
+</ol>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubG9jYWxlKGRlY2ltYWxfbWFyayA9IFwiLlwiLCBncm91cGluZ19tYXJrID0gXCIuXCIpXG5gYGAifQ== -->
+<pre class="r"><code>locale(decimal_mark = &quot;.&quot;, grouping_mark = &quot;.&quot;)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiRXJyb3I6IGBkZWNpbWFsX21hcmtgIGFuZCBgZ3JvdXBpbmdfbWFya2AgbXVzdCBiZSBkaWZmZXJlbnRcbiJ9 -->
+<pre><code>Error: `decimal_mark` and `grouping_mark` must be different</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p><strong>If the two arguments try to use the same character an error is thrown - there must be different marks for decimal vs grouping.</strong></p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubG9jYWxlKGRlY2ltYWxfbWFyayA9IFwiLFwiKVxuYGBgIn0= -->
+<pre class="r"><code>locale(decimal_mark = &quot;,&quot;)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiPGxvY2FsZT5cbk51bWJlcnM6ICAxMjMuNDU2LDc4XG5Gb3JtYXRzOiAgJUFEIC8gJUFUXG5UaW1lem9uZTogVVRDXG5FbmNvZGluZzogVVRGLThcbjxkYXRlX25hbWVzPlxuRGF5czogICBTdW5kYXkgKFN1biksIE1vbmRheSAoTW9uKSwgVHVlc2RheSAoVHVlKSwgV2VkbmVzZGF5XG4gICAgICAgIChXZWQpLCBUaHVyc2RheSAoVGh1KSwgRnJpZGF5IChGcmkpLCBTYXR1cmRheVxuICAgICAgICAoU2F0KVxuTW9udGhzOiBKYW51YXJ5IChKYW4pLCBGZWJydWFyeSAoRmViKSwgTWFyY2ggKE1hciksIEFwcmlsXG4gICAgICAgIChBcHIpLCBNYXkgKE1heSksIEp1bmUgKEp1biksIEp1bHkgKEp1bCksXG4gICAgICAgIEF1Z3VzdCAoQXVnKSwgU2VwdGVtYmVyIChTZXApLCBPY3RvYmVyIChPY3QpLFxuICAgICAgICBOb3ZlbWJlciAoTm92KSwgRGVjZW1iZXIgKERlYylcbkFNL1BNOiAgQU0vUE1cbiJ9 -->
+<pre><code>&lt;locale&gt;
+Numbers:  123.456,78
+Formats:  %AD / %AT
+Timezone: UTC
+Encoding: UTF-8
+&lt;date_names&gt;
+Days:   Sunday (Sun), Monday (Mon), Tuesday (Tue), Wednesday
+        (Wed), Thursday (Thu), Friday (Fri), Saturday
+        (Sat)
+Months: January (Jan), February (Feb), March (Mar), April
+        (Apr), May (May), June (Jun), July (Jul),
+        August (Aug), September (Sep), October (Oct),
+        November (Nov), December (Dec)
+AM/PM:  AM/PM</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p><strong>The grouping mark becomes <code>.</code>.</strong></p>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubG9jYWxlKGdyb3VwaW5nX21hcmsgPSBcIi5cIilcbmBgYCJ9 -->
+<pre class="r"><code>locale(grouping_mark = &quot;.&quot;)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiPGxvY2FsZT5cbk51bWJlcnM6ICAxMjMuNDU2LDc4XG5Gb3JtYXRzOiAgJUFEIC8gJUFUXG5UaW1lem9uZTogVVRDXG5FbmNvZGluZzogVVRGLThcbjxkYXRlX25hbWVzPlxuRGF5czogICBTdW5kYXkgKFN1biksIE1vbmRheSAoTW9uKSwgVHVlc2RheSAoVHVlKSwgV2VkbmVzZGF5XG4gICAgICAgIChXZWQpLCBUaHVyc2RheSAoVGh1KSwgRnJpZGF5IChGcmkpLCBTYXR1cmRheVxuICAgICAgICAoU2F0KVxuTW9udGhzOiBKYW51YXJ5IChKYW4pLCBGZWJydWFyeSAoRmViKSwgTWFyY2ggKE1hciksIEFwcmlsXG4gICAgICAgIChBcHIpLCBNYXkgKE1heSksIEp1bmUgKEp1biksIEp1bHkgKEp1bCksXG4gICAgICAgIEF1Z3VzdCAoQXVnKSwgU2VwdGVtYmVyIChTZXApLCBPY3RvYmVyIChPY3QpLFxuICAgICAgICBOb3ZlbWJlciAoTm92KSwgRGVjZW1iZXIgKERlYylcbkFNL1BNOiAgQU0vUE1cbiJ9 -->
+<pre><code>&lt;locale&gt;
+Numbers:  123.456,78
+Formats:  %AD / %AT
+Timezone: UTC
+Encoding: UTF-8
+&lt;date_names&gt;
+Days:   Sunday (Sun), Monday (Mon), Tuesday (Tue), Wednesday
+        (Wed), Thursday (Thu), Friday (Fri), Saturday
+        (Sat)
+Months: January (Jan), February (Feb), March (Mar), April
+        (Apr), May (May), June (Jun), July (Jul),
+        August (Aug), September (Sep), October (Oct),
+        November (Nov), December (Dec)
+AM/PM:  AM/PM</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p><strong>The decimal mark becomes <code>,</code>.</strong></p>
+<ol start="3" style="list-style-type: decimal">
+<li>I didn’t discuss the <code>date_format</code> and <code>time_format</code> options to <code>locale()</code>. What do they do? Construct an example that shows when they might be useful.</li>
+</ol>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubGlicmFyeShobXMpXG5wYXJzZV9kYXRlKFwiMDgvMDkvMjAxMFwiLCBsb2NhbGUgPSBsb2NhbGUoZGF0ZV9mb3JtYXQgPSBcIiVkLyVtLyVZXCIpKVxuYGBgIn0= -->
+<pre class="r"><code>library(hms)
+parse_date(&quot;08/09/2010&quot;, locale = locale(date_format = &quot;%d/%m/%Y&quot;))</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMjAxMC0wOS0wOFwiXG4ifQ== -->
+<pre><code>[1] &quot;2010-09-08&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxucGFyc2VfdGltZShcIjE4MjBcIiwgbG9jYWxlID0gbG9jYWxlKHRpbWVfZm9ybWF0ID0gXCIlSCVNXCIpKVxuYGBgIn0= -->
+<pre class="r"><code>parse_time(&quot;1820&quot;, locale = locale(time_format = &quot;%H%M&quot;))</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiMTg6MjA6MDBcbiJ9 -->
+<pre><code>18:20:00</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p><strong>These options allow you to define the way dates and times are formatted so they can be parsed correctly.</strong></p>
+<ol start="4" style="list-style-type: decimal">
+<li>If you live outside the US, create a new locale object that encapsulates the settings for the types of file you read most commonly.</li>
+</ol>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxubG9jYWxlKFxuICBkYXRlX25hbWVzID0gXCJlblwiLFxuICBkYXRlX2Zvcm1hdCA9IFwiJWQvJW0vJVlcIixcbiAgdGltZV9mb3JtYXQgPSBcIiVoOiVNJXAgJVpcIixcbiAgZGVjaW1hbF9tYXJrID0gXCIuXCIsXG4gIGdyb3VwaW5nX21hcmsgPSBcIixcIixcbiAgdHogPSBcIkF1c3RyYWxpYS9TeWRuZXlcIixcbiAgZW5jb2RpbmcgPSBcIlVURi04XCJcbilcbmBgYCJ9 -->
+<pre class="r"><code>locale(
+  date_names = &quot;en&quot;,
+  date_format = &quot;%d/%m/%Y&quot;,
+  time_format = &quot;%h:%M%p %Z&quot;,
+  decimal_mark = &quot;.&quot;,
+  grouping_mark = &quot;,&quot;,
+  tz = &quot;Australia/Sydney&quot;,
+  encoding = &quot;UTF-8&quot;
+)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiPGxvY2FsZT5cbk51bWJlcnM6ICAxMjMsNDU2Ljc4XG5Gb3JtYXRzOiAgJWQvJW0vJVkgLyAlaDolTSVwICVaXG5UaW1lem9uZTogQXVzdHJhbGlhL1N5ZG5leVxuRW5jb2Rpbmc6IFVURi04XG48ZGF0ZV9uYW1lcz5cbkRheXM6ICAgU3VuZGF5IChTdW4pLCBNb25kYXkgKE1vbiksIFR1ZXNkYXkgKFR1ZSksIFdlZG5lc2RheVxuICAgICAgICAoV2VkKSwgVGh1cnNkYXkgKFRodSksIEZyaWRheSAoRnJpKSwgU2F0dXJkYXlcbiAgICAgICAgKFNhdClcbk1vbnRoczogSmFudWFyeSAoSmFuKSwgRmVicnVhcnkgKEZlYiksIE1hcmNoIChNYXIpLCBBcHJpbFxuICAgICAgICAoQXByKSwgTWF5IChNYXkpLCBKdW5lIChKdW4pLCBKdWx5IChKdWwpLFxuICAgICAgICBBdWd1c3QgKEF1ZyksIFNlcHRlbWJlciAoU2VwKSwgT2N0b2JlciAoT2N0KSxcbiAgICAgICAgTm92ZW1iZXIgKE5vdiksIERlY2VtYmVyIChEZWMpXG5BTS9QTTogIEFNL1BNXG4ifQ== -->
+<pre><code>&lt;locale&gt;
+Numbers:  123,456.78
+Formats:  %d/%m/%Y / %h:%M%p %Z
+Timezone: Australia/Sydney
+Encoding: UTF-8
+&lt;date_names&gt;
+Days:   Sunday (Sun), Monday (Mon), Tuesday (Tue), Wednesday
+        (Wed), Thursday (Thu), Friday (Fri), Saturday
+        (Sat)
+Months: January (Jan), February (Feb), March (Mar), April
+        (Apr), May (May), June (Jun), July (Jul),
+        August (Aug), September (Sep), October (Oct),
+        November (Nov), December (Dec)
+AM/PM:  AM/PM</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<ol start="5" style="list-style-type: decimal">
+<li>What’s the difference between <code>read_csv()</code> and <code>read_csv2()</code>?</li>
+</ol>
+<p><strong>The difference is the delimiting character - <code>,</code> in the former, <code>;</code> in the latter.</strong></p>
+<ol start="6" style="list-style-type: decimal">
+<li>What are the most common encodings used in Europe? What are the most common encodings used in Asia? Do some googling to find out.</li>
+</ol>
+<p><strong>Aside from UTF-8, some of the most commonly used encodings in modern documents (ASCII has become less common in the 21st century) would appear to include the ISO-8859 variants (e.g., ISO-8859-1 in Western Europe), GB18030 in China which is a transformation of Unicode, and the Windows character sets (e.g., Windows-1251 for Cyrillic alphabets and Windows-1252 for Western/Latin). Some stats show that <a href="https://w3techs.com/technologies/overview/character_encoding/all">the vast majority of websites are now using UTF-8</a> but data files may be a different story.</strong></p>
+<ol start="7" style="list-style-type: decimal">
+<li>Generate the correct format string to parse each of the following dates and times:</li>
+</ol>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZDEgPC0gXCJKYW51YXJ5IDEsIDIwMTBcIlxuZDIgPC0gXCIyMDE1LU1hci0wN1wiXG5kMyA8LSBcIjA2LUp1bi0yMDE3XCJcbmQ0IDwtIGMoXCJBdWd1c3QgMTkgKDIwMTUpXCIsIFwiSnVseSAxICgyMDE1KVwiKVxuZDUgPC0gXCIxMi8zMC8xNFwiICMgRGVjIDMwLCAyMDE0XG50MSA8LSBcIjE3MDVcIlxudDIgPC0gXCIxMToxNToxMC4xMiBQTVwiXG5wYXJzZV9kYXRlKGQxLCBcIiVCICVkLCAlWVwiKVxuYGBgIn0= -->
+<pre class="r"><code>d1 &lt;- &quot;January 1, 2010&quot;
+d2 &lt;- &quot;2015-Mar-07&quot;
+d3 &lt;- &quot;06-Jun-2017&quot;
+d4 &lt;- c(&quot;August 19 (2015)&quot;, &quot;July 1 (2015)&quot;)
+d5 &lt;- &quot;12/30/14&quot; # Dec 30, 2014
+t1 &lt;- &quot;1705&quot;
+t2 &lt;- &quot;11:15:10.12 PM&quot;
+parse_date(d1, &quot;%B %d, %Y&quot;)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMjAxMC0wMS0wMVwiXG4ifQ== -->
+<pre><code>[1] &quot;2010-01-01&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxucGFyc2VfZGF0ZShkMiwgXCIlWS0lYi0lZFwiKVxuYGBgIn0= -->
+<pre class="r"><code>parse_date(d2, &quot;%Y-%b-%d&quot;)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMjAxNS0wMy0wN1wiXG4ifQ== -->
+<pre><code>[1] &quot;2015-03-07&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxucGFyc2VfZGF0ZShkMywgXCIlZC0lYi0lWVwiKVxuYGBgIn0= -->
+<pre class="r"><code>parse_date(d3, &quot;%d-%b-%Y&quot;)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMjAxNy0wNi0wNlwiXG4ifQ== -->
+<pre><code>[1] &quot;2017-06-06&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxucGFyc2VfZGF0ZShkNCwgXCIlQiAlZCAoJVkpXCIpXG5gYGAifQ== -->
+<pre class="r"><code>parse_date(d4, &quot;%B %d (%Y)&quot;)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMjAxNS0wOC0xOVwiIFwiMjAxNS0wNy0wMVwiXG4ifQ== -->
+<pre><code>[1] &quot;2015-08-19&quot; &quot;2015-07-01&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxucGFyc2VfZGF0ZShkNSwgXCIlbS8lZC8leVwiKVxuYGBgIn0= -->
+<pre class="r"><code>parse_date(d5, &quot;%m/%d/%y&quot;)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIFwiMjAxNC0xMi0zMFwiXG4ifQ== -->
+<pre><code>[1] &quot;2014-12-30&quot;</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxucGFyc2VfdGltZSh0MSwgXCIlSCVNXCIpXG5gYGAifQ== -->
+<pre class="r"><code>parse_time(t1, &quot;%H%M&quot;)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiMTc6MDU6MDBcbiJ9 -->
+<pre><code>17:05:00</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxucGFyc2VfdGltZSh0MiwgXCIlSTolTTolT1MgJXBcIilcbmBgYCJ9 -->
+<pre class="r"><code>parse_time(t2, &quot;%I:%M:%OS %p&quot;)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiMjM6MTU6MTAuMTJcbiJ9 -->
+<pre><code>23:15:10.12</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
 </div>
 </div>
 
-<div id="rmd-source-code">LS0tCnRpdGxlOiAiQ2hhcHRlciAxMTogRGF0YSBpbXBvcnQiCm91dHB1dDogaHRtbF9ub3RlYm9vawotLS0KCmBgYHtyfQpsaWJyYXJ5KHRpZHl2ZXJzZSkKYGBgCgojIDExLjIgR2V0dGluZyBzdGFydGVkCgojIyAxMS4yLjIgRXhlcmNpc2VzCgoxLiBXaGF0IGZ1bmN0aW9uIHdvdWxkIHlvdSB1c2UgdG8gcmVhZCBhIGZpbGUgd2hlcmUgZmllbGRzIHdlcmUgc2VwYXJhdGVkIHdpdGgg4oCcfOKAnT8KCmBgYHtyfQpyZWFkX2RlbGltKAogICJhfGJ8YwogIDF8MnwzCiAgNHw1fDYiLAogICJ8IgopCmBgYAoKKipgcmVhZF9kZWxpbWAgY2FuIGJlIHVzZWQgdG8gcmVhZCBpbiBmaWxlcyB3aXRoIGFuIGFyYml0cmFyeSBjaGFyYWN0ZXIgYXMgdGhlIGRlbGltaXRlci4qKgoKMi4gQXBhcnQgZnJvbSBmaWxlLCBza2lwLCBhbmQgY29tbWVudCwgd2hhdCBvdGhlciBhcmd1bWVudHMgZG8gcmVhZF9jc3YoKSBhbmQgcmVhZF90c3YoKSBoYXZlIGluIGNvbW1vbj8KCmBgYHtyfQo/cmVhZF9jc3YKYGBgCgpyZWFkX2NzdihmaWxlLCBjb2xfbmFtZXMgPSBUUlVFLCBjb2xfdHlwZXMgPSBOVUxMLAogIGxvY2FsZSA9IGRlZmF1bHRfbG9jYWxlKCksIG5hID0gYygiIiwgIk5BIiksIHF1b3RlZF9uYSA9IFRSVUUsCiAgY29tbWVudCA9ICIiLCB0cmltX3dzID0gVFJVRSwgc2tpcCA9IDAsIG5fbWF4ID0gSW5mLAogIGd1ZXNzX21heCA9IG1pbigxMDAwLCBuX21heCksIHByb2dyZXNzID0gaW50ZXJhY3RpdmUoKSkKCnJlYWRfdHN2KGZpbGUsIGNvbF9uYW1lcyA9IFRSVUUsIGNvbF90eXBlcyA9IE5VTEwsCiAgbG9jYWxlID0gZGVmYXVsdF9sb2NhbGUoKSwgbmEgPSBjKCIiLCAiTkEiKSwgcXVvdGVkX25hID0gVFJVRSwKICBjb21tZW50ID0gIiIsIHRyaW1fd3MgPSBUUlVFLCBza2lwID0gMCwgbl9tYXggPSBJbmYsCiAgZ3Vlc3NfbWF4ID0gbWluKDEwMDAsIG5fbWF4KSwgcHJvZ3Jlc3MgPSBpbnRlcmFjdGl2ZSgpKQoKKipPdGhlciBhcmd1bWVudHMgYXJlIGBjb2xfbmFtZXNgLCBgY29sX3R5cGVzYCwgYGxvY2FsZWAsIGBuYWAsIGBxdW90ZWRfbmFgLCBgdHJpbV93c2AsIGBuX21heGAsIGBndWVzc19tYXhgLCBhbmQgYHByb2dyZXNzYC4qKgoKMy4gV2hhdCBhcmUgdGhlIG1vc3QgaW1wb3J0YW50IGFyZ3VtZW50cyB0byByZWFkX2Z3ZigpPwoKYGBge3J9Cj9yZWFkX2Z3ZgpgYGAKcmVhZF9md2YoZmlsZSwgY29sX3Bvc2l0aW9ucywgY29sX3R5cGVzID0gTlVMTCwgbG9jYWxlID0gZGVmYXVsdF9sb2NhbGUoKSwKICBuYSA9IGMoIiIsICJOQSIpLCBjb21tZW50ID0gIiIsIHNraXAgPSAwLCBuX21heCA9IEluZiwKICBndWVzc19tYXggPSBtaW4obl9tYXgsIDEwMDApLCBwcm9ncmVzcyA9IGludGVyYWN0aXZlKCkpCgoqKlRoZSBrZXkgYXJndW1lbnRzIGFyZSBgZmlsZWAgdG8gaW5kaWNhdGUgd2hpY2ggZmlsZSB0byByZWFkIGFuZCBgZndmX3Bvc2l0aW9uc2Agb3IgYGZ3Zl93aWR0aGAgKHdoaWNoIHByb3ZpZGUgdGhlIHJlcXVpcmVkIGluZm8gZm9yIGBjb2xfcG9zaXRpb25zYCksIGFuZCB0aGVuIHRoZXJlIGFyZSBvcHRpb25zIHRvIHNldCBgbmFgLCBgY29sX3R5cGVzYCBhbmQgYHNraXBgIHRvIHN1aXQgdGhlIGRhdGEgZmlsZSwgYWxvbmcgd2l0aCBzb21lIG90aGVyIGFyZ3VtZW50cyB0aGF0IG1heSBiZSB1c2VkIG9jY2FzaW9uYWxseS4qKgoKNC4gU29tZXRpbWVzIHN0cmluZ3MgaW4gYSBDU1YgZmlsZSBjb250YWluIGNvbW1hcy4gVG8gcHJldmVudCB0aGVtIGZyb20gY2F1c2luZyBwcm9ibGVtcyB0aGV5IG5lZWQgdG8gYmUgc3Vycm91bmRlZCBieSBhIHF1b3RpbmcgY2hhcmFjdGVyLCBsaWtlICIgb3IgJy4gQnkgY29udmVudGlvbiwgcmVhZF9jc3YoKSBhc3N1bWVzIHRoYXQgdGhlIHF1b3RpbmcgY2hhcmFjdGVyIHdpbGwgYmUgIiwgYW5kIGlmIHlvdSB3YW50IHRvIGNoYW5nZSBpdCB5b3XigJlsbCBuZWVkIHRvIHVzZSByZWFkX2RlbGltKCkgaW5zdGVhZC4gV2hhdCBhcmd1bWVudHMgZG8geW91IG5lZWQgdG8gc3BlY2lmeSB0byByZWFkIHRoZSBmb2xsb3dpbmcgdGV4dCBpbnRvIGEgZGF0YSBmcmFtZT8KCmAieCx5XG4xLCdhLGInImAKCmBgYHtyfQpyZWFkX2RlbGltKAogICJ4LHlcbjEsJ2EsYiciLAogIGRlbGltID0gIiwiLAogIHF1b3RlID0gIlwnIgopCmBgYAoKNS4gSWRlbnRpZnkgd2hhdCBpcyB3cm9uZyB3aXRoIGVhY2ggb2YgdGhlIGZvbGxvd2luZyBpbmxpbmUgQ1NWIGZpbGVzLiBXaGF0IGhhcHBlbnMgd2hlbiB5b3UgcnVuIHRoZSBjb2RlPwoKYGBgIHtyfQpyZWFkX2NzdigiYSxiXG4xLDIsM1xuNCw1LDYiKQpgYGAKCioqVGhlcmUgYXJlIG9ubHkgdHdvIHZhcmlhYmxlcyBpbiB0aGUgaGVhZGVyIHJvdyBidXQgdGhyZWUgdmFsdWVzIGluIGVhY2ggc3Vic2VxdWVudCByb3cgLSB0aGUgZmluYWwgdmFsdWVzIGFyZSBkcm9wcGVkIGFzIHRoZSB0aWJibGUgaXMgb25seSBzZXQgdXAgd2l0aCB0d28gdmFyaWFibGVzLioqCgpgYGB7cn0KcmVhZF9jc3YoImEsYixjXG4xLDJcbjEsMiwzLDQiKQpgYGAKCioqVGhlcmUgYXJlIHRocmVlIHZhcmlhYmxlcyBkZWZpbmVkIGluIHRoZSBoZWFkZXIgcm93IGJ1dCB0aGUgZGF0YSByb3dzIGhhdmUgZWl0aGVyIG9uZSB2YWx1ZSB0b28gZmV3IG9yIG9uZSB0b28gbWFueS4gVGhlIGV4Y2VzcyB2YWx1ZSBpcyBpZ25vcmVkLCB3aGlsZSB3aGVuIHRoZXJlIGFyZW4ndCBlbm91Z2ggdmFsdWVzIGluIGEgcm93IHRoZSBmaW5hbCBjb2x1bW4gaXMgYE5BYC4qKgoKYGBge3J9CnJlYWRfY3N2KCJhLGJcblwiMSIpCmBgYAoKKipBZ2FpbiwgaXQncyBvbmUgdmFsdWUgc2hvcnQgc28gZW5kcyB1cCB3aXRoIGFuIGBOQWAuIEl0IGFsc28gaGFzIGFuIGVzY2FwZWQgcXVvdGF0aW9uIG1hcmsgYmVmb3JlIHRoZSB2YWx1ZSBidXQgaXMgbWlzc2luZyB0aGUgY2xvc2luZyBlc2NhcGVkIHF1b3RhdGlvbiBtYXJrIGFmdGVyIGl0LCBidXQgdGhlIGZ1bmN0aW9uIHN0aWxsIHNlZW1zIHRvIHJlYWQgdGhlIHZhbHVlIGluIG9rYXkuKioKCmBgYHtyfQpyZWFkX2NzdigiYSxiXG4xLDJcbmEsYiIpCmBgYAoKKipUaGVyZSBkb2Vzbid0IHNlZW0gdG8gYmUgYW55dGhpbmcgYWJzb2x1dGVseSB3cm9uZyBhYm91dCB0aGlzIGZpbGUsIGJ1dCBub3RlIHRoYXQgdGhlIHZhcmlhYmxlcyBiZWNvbWUgY2hhcmFjdGVyIGJlY2F1c2Ugb2YgdGhlIHNlY29uZCByb3cgb2YgZGF0YS4gSWYgdGhvc2UgdmFsdWVzIHdlcmVuJ3QgdGhlcmUgdGhlbiB0aGUgZmlyc3Qgcm93IHdvdWxkIGJlIHJlYWQgaW4gYXMgbnVtZXJpYyB2YXJpYWJsZXMuKioKCmBgYHtyfQpyZWFkX2NzdigiYTtiXG4xOzMiKQpgYGAKCioqSXQgbG9va3MgbGlrZSB0aGlzIHNob3VsZCBoYXZlIHVzZWQgYHJlYWRfY3N2MmAgZm9yIHRoZSBzZW1pY29sb25zIHRvIGJlIGNvbnNpZGVyZWQgYXMgc2VwYXJhdG9ycyAtIHNlZSBiZWxvdy4qKgoKYGBge3J9CnJlYWRfY3N2MigiYTtiXG4xOzMiKQpgYGAK</div>
+<div id="rmd-source-code">LS0tCnRpdGxlOiAiQ2hhcHRlciAxMTogRGF0YSBpbXBvcnQiCm91dHB1dDogaHRtbF9ub3RlYm9vawotLS0KCmBgYHtyfQpsaWJyYXJ5KHRpZHl2ZXJzZSkKYGBgCgojIDExLjIgR2V0dGluZyBzdGFydGVkCgojIyAxMS4yLjIgRXhlcmNpc2VzCgoxLiBXaGF0IGZ1bmN0aW9uIHdvdWxkIHlvdSB1c2UgdG8gcmVhZCBhIGZpbGUgd2hlcmUgZmllbGRzIHdlcmUgc2VwYXJhdGVkIHdpdGgg4oCcfOKAnT8KCmBgYHtyfQpyZWFkX2RlbGltKAogICJhfGJ8YwogIDF8MnwzCiAgNHw1fDYiLAogICJ8IgopCmBgYAoKKipgcmVhZF9kZWxpbWAgY2FuIGJlIHVzZWQgdG8gcmVhZCBpbiBmaWxlcyB3aXRoIGFuIGFyYml0cmFyeSBjaGFyYWN0ZXIgYXMgdGhlIGRlbGltaXRlci4qKgoKMi4gQXBhcnQgZnJvbSBmaWxlLCBza2lwLCBhbmQgY29tbWVudCwgd2hhdCBvdGhlciBhcmd1bWVudHMgZG8gcmVhZF9jc3YoKSBhbmQgcmVhZF90c3YoKSBoYXZlIGluIGNvbW1vbj8KCmBgYHtyfQo/cmVhZF9jc3YKYGBgCgpyZWFkX2NzdihmaWxlLCBjb2xfbmFtZXMgPSBUUlVFLCBjb2xfdHlwZXMgPSBOVUxMLAogIGxvY2FsZSA9IGRlZmF1bHRfbG9jYWxlKCksIG5hID0gYygiIiwgIk5BIiksIHF1b3RlZF9uYSA9IFRSVUUsCiAgY29tbWVudCA9ICIiLCB0cmltX3dzID0gVFJVRSwgc2tpcCA9IDAsIG5fbWF4ID0gSW5mLAogIGd1ZXNzX21heCA9IG1pbigxMDAwLCBuX21heCksIHByb2dyZXNzID0gaW50ZXJhY3RpdmUoKSkKCnJlYWRfdHN2KGZpbGUsIGNvbF9uYW1lcyA9IFRSVUUsIGNvbF90eXBlcyA9IE5VTEwsCiAgbG9jYWxlID0gZGVmYXVsdF9sb2NhbGUoKSwgbmEgPSBjKCIiLCAiTkEiKSwgcXVvdGVkX25hID0gVFJVRSwKICBjb21tZW50ID0gIiIsIHRyaW1fd3MgPSBUUlVFLCBza2lwID0gMCwgbl9tYXggPSBJbmYsCiAgZ3Vlc3NfbWF4ID0gbWluKDEwMDAsIG5fbWF4KSwgcHJvZ3Jlc3MgPSBpbnRlcmFjdGl2ZSgpKQoKKipPdGhlciBhcmd1bWVudHMgYXJlIGBjb2xfbmFtZXNgLCBgY29sX3R5cGVzYCwgYGxvY2FsZWAsIGBuYWAsIGBxdW90ZWRfbmFgLCBgdHJpbV93c2AsIGBuX21heGAsIGBndWVzc19tYXhgLCBhbmQgYHByb2dyZXNzYC4qKgoKMy4gV2hhdCBhcmUgdGhlIG1vc3QgaW1wb3J0YW50IGFyZ3VtZW50cyB0byByZWFkX2Z3ZigpPwoKYGBge3J9Cj9yZWFkX2Z3ZgpgYGAKcmVhZF9md2YoZmlsZSwgY29sX3Bvc2l0aW9ucywgY29sX3R5cGVzID0gTlVMTCwgbG9jYWxlID0gZGVmYXVsdF9sb2NhbGUoKSwKICBuYSA9IGMoIiIsICJOQSIpLCBjb21tZW50ID0gIiIsIHNraXAgPSAwLCBuX21heCA9IEluZiwKICBndWVzc19tYXggPSBtaW4obl9tYXgsIDEwMDApLCBwcm9ncmVzcyA9IGludGVyYWN0aXZlKCkpCgoqKlRoZSBrZXkgYXJndW1lbnRzIGFyZSBgZmlsZWAgdG8gaW5kaWNhdGUgd2hpY2ggZmlsZSB0byByZWFkIGFuZCBgZndmX3Bvc2l0aW9uc2Agb3IgYGZ3Zl93aWR0aGAgKHdoaWNoIHByb3ZpZGUgdGhlIHJlcXVpcmVkIGluZm8gZm9yIGBjb2xfcG9zaXRpb25zYCksIGFuZCB0aGVuIHRoZXJlIGFyZSBvcHRpb25zIHRvIHNldCBgbmFgLCBgY29sX3R5cGVzYCBhbmQgYHNraXBgIHRvIHN1aXQgdGhlIGRhdGEgZmlsZSwgYWxvbmcgd2l0aCBzb21lIG90aGVyIGFyZ3VtZW50cyB0aGF0IG1heSBiZSB1c2VkIG9jY2FzaW9uYWxseS4qKgoKNC4gU29tZXRpbWVzIHN0cmluZ3MgaW4gYSBDU1YgZmlsZSBjb250YWluIGNvbW1hcy4gVG8gcHJldmVudCB0aGVtIGZyb20gY2F1c2luZyBwcm9ibGVtcyB0aGV5IG5lZWQgdG8gYmUgc3Vycm91bmRlZCBieSBhIHF1b3RpbmcgY2hhcmFjdGVyLCBsaWtlICIgb3IgJy4gQnkgY29udmVudGlvbiwgcmVhZF9jc3YoKSBhc3N1bWVzIHRoYXQgdGhlIHF1b3RpbmcgY2hhcmFjdGVyIHdpbGwgYmUgIiwgYW5kIGlmIHlvdSB3YW50IHRvIGNoYW5nZSBpdCB5b3XigJlsbCBuZWVkIHRvIHVzZSByZWFkX2RlbGltKCkgaW5zdGVhZC4gV2hhdCBhcmd1bWVudHMgZG8geW91IG5lZWQgdG8gc3BlY2lmeSB0byByZWFkIHRoZSBmb2xsb3dpbmcgdGV4dCBpbnRvIGEgZGF0YSBmcmFtZT8KCmAieCx5XG4xLCdhLGInImAKCmBgYHtyfQpyZWFkX2RlbGltKAogICJ4LHlcbjEsJ2EsYiciLAogIGRlbGltID0gIiwiLAogIHF1b3RlID0gIlwnIgopCmBgYAoKNS4gSWRlbnRpZnkgd2hhdCBpcyB3cm9uZyB3aXRoIGVhY2ggb2YgdGhlIGZvbGxvd2luZyBpbmxpbmUgQ1NWIGZpbGVzLiBXaGF0IGhhcHBlbnMgd2hlbiB5b3UgcnVuIHRoZSBjb2RlPwoKYGBgIHtyfQpyZWFkX2NzdigiYSxiXG4xLDIsM1xuNCw1LDYiKQpgYGAKCioqVGhlcmUgYXJlIG9ubHkgdHdvIHZhcmlhYmxlcyBpbiB0aGUgaGVhZGVyIHJvdyBidXQgdGhyZWUgdmFsdWVzIGluIGVhY2ggc3Vic2VxdWVudCByb3cgLSB0aGUgZmluYWwgdmFsdWVzIGFyZSBkcm9wcGVkIGFzIHRoZSB0aWJibGUgaXMgb25seSBzZXQgdXAgd2l0aCB0d28gdmFyaWFibGVzLioqCgpgYGB7cn0KcmVhZF9jc3YoImEsYixjXG4xLDJcbjEsMiwzLDQiKQpgYGAKCioqVGhlcmUgYXJlIHRocmVlIHZhcmlhYmxlcyBkZWZpbmVkIGluIHRoZSBoZWFkZXIgcm93IGJ1dCB0aGUgZGF0YSByb3dzIGhhdmUgZWl0aGVyIG9uZSB2YWx1ZSB0b28gZmV3IG9yIG9uZSB0b28gbWFueS4gVGhlIGV4Y2VzcyB2YWx1ZSBpcyBpZ25vcmVkLCB3aGlsZSB3aGVuIHRoZXJlIGFyZW4ndCBlbm91Z2ggdmFsdWVzIGluIGEgcm93IHRoZSBmaW5hbCBjb2x1bW4gaXMgYE5BYC4qKgoKYGBge3J9CnJlYWRfY3N2KCJhLGJcblwiMSIpCmBgYAoKKipBZ2FpbiwgaXQncyBvbmUgdmFsdWUgc2hvcnQgc28gZW5kcyB1cCB3aXRoIGFuIGBOQWAuIEl0IGFsc28gaGFzIGFuIGVzY2FwZWQgcXVvdGF0aW9uIG1hcmsgYmVmb3JlIHRoZSB2YWx1ZSBidXQgaXMgbWlzc2luZyB0aGUgY2xvc2luZyBlc2NhcGVkIHF1b3RhdGlvbiBtYXJrIGFmdGVyIGl0LCBidXQgdGhlIGZ1bmN0aW9uIHN0aWxsIHNlZW1zIHRvIHJlYWQgdGhlIHZhbHVlIGluIG9rYXkuKioKCmBgYHtyfQpyZWFkX2NzdigiYSxiXG4xLDJcbmEsYiIpCmBgYAoKKipUaGVyZSBkb2Vzbid0IHNlZW0gdG8gYmUgYW55dGhpbmcgYWJzb2x1dGVseSB3cm9uZyBhYm91dCB0aGlzIGZpbGUsIGJ1dCBub3RlIHRoYXQgdGhlIHZhcmlhYmxlcyBiZWNvbWUgY2hhcmFjdGVyIGJlY2F1c2Ugb2YgdGhlIHNlY29uZCByb3cgb2YgZGF0YS4gSWYgdGhvc2UgdmFsdWVzIHdlcmVuJ3QgdGhlcmUgdGhlbiB0aGUgZmlyc3Qgcm93IHdvdWxkIGJlIHJlYWQgaW4gYXMgbnVtZXJpYyB2YXJpYWJsZXMuKioKCmBgYHtyfQpyZWFkX2NzdigiYTtiXG4xOzMiKQpgYGAKCioqSXQgbG9va3MgbGlrZSB0aGlzIHNob3VsZCBoYXZlIHVzZWQgYHJlYWRfY3N2MmAgZm9yIHRoZSBzZW1pY29sb25zIHRvIGJlIGNvbnNpZGVyZWQgYXMgc2VwYXJhdG9ycyAtIHNlZSBiZWxvdy4qKgoKYGBge3J9CnJlYWRfY3N2MigiYTtiXG4xOzMiKQpgYGAKCiMgMTEuMyBQYXJzaW5nIGEgdmVjdG9yCgojIyAxMS4zLjUgRXhlcmNpc2VzCgoxLiBXaGF0IGFyZSB0aGUgbW9zdCBpbXBvcnRhbnQgYXJndW1lbnRzIHRvIGBsb2NhbGUoKWA/CgpgYGB7cn0KP2xvY2FsZQpgYGAKCioqYGRlY2ltYWxfbWFya2AgYW5kIGBncm91cGluZ19tYXJrYCBhcmUgaW1wb3J0YW50IGZvciBwcm9jZXNzaW5nIG9mIGFsbCBudW1lcmljIGRhdGEuIGB0emAgd2lsbCBiZSBpbXBvcnRhbnQgZm9yIGFueSB0aW1lIGRhdGEgdG8gZW5zdXJlIGl0IGFjY3VyYXRlbHkgcmVmbGVjdHMgdGhlIGxvY2FsIHRpbWUsIGFuZCB0aGVuIGBkYXRlX25hbWVzYCwgYGRhdGVfZm9ybWF0YCBhbmQgYHRpbWVfZm9ybWF0YCBtYXkgYWxzbyBiZSBpbXBvcnRhbnQgZm9yIHByb2Nlc3NpbmcgZGF0ZSBhbmQgdGltZSB2YWx1ZXMuIGBlbmNvZGluZ2AgaXMgY3J1Y2lhbCBhbmQgd2lsbCBiZSBwcm9ibGVtYXRpYyBpZiBzZXQgd3JvbmcgZm9yIHRoZSBpbnB1dCBmaWxlLCBidXQgaW4gbWFueSBtb2Rlcm4gY2FzZXMgdGhlIGRlZmF1bHQgb2YgVVRGLTggd2lsbCBiZSBjb3JyZWN0IGFuZCBjb3ZlcnMgZXZlcnl0aGluZy4qKgoKMi4gV2hhdCBoYXBwZW5zIGlmIHlvdSB0cnkgYW5kIHNldCBgZGVjaW1hbF9tYXJrYCBhbmQgYGdyb3VwaW5nX21hcmtgIHRvIHRoZSBzYW1lIGNoYXJhY3Rlcj8gV2hhdCBoYXBwZW5zIHRvIHRoZSBkZWZhdWx0IHZhbHVlIG9mIGBncm91cGluZ19tYXJrYCB3aGVuIHlvdSBzZXQgYGRlY2ltYWxfbWFya2AgdG8g4oCcLOKAnT8gV2hhdCBoYXBwZW5zIHRvIHRoZSBkZWZhdWx0IHZhbHVlIG9mIGBkZWNpbWFsX21hcmtgIHdoZW4geW91IHNldCB0aGUgYGdyb3VwaW5nX21hcmtgIHRvIOKAnC7igJ0/CgpgYGB7cn0KbG9jYWxlKGRlY2ltYWxfbWFyayA9ICIuIiwgZ3JvdXBpbmdfbWFyayA9ICIuIikKYGBgCgoqKklmIHRoZSB0d28gYXJndW1lbnRzIHRyeSB0byB1c2UgdGhlIHNhbWUgY2hhcmFjdGVyIGFuIGVycm9yIGlzIHRocm93biAtIHRoZXJlIG11c3QgYmUgZGlmZmVyZW50IG1hcmtzIGZvciBkZWNpbWFsIHZzIGdyb3VwaW5nLioqCgpgYGB7cn0KbG9jYWxlKGRlY2ltYWxfbWFyayA9ICIsIikKYGBgCgoqKlRoZSBncm91cGluZyBtYXJrIGJlY29tZXMgYC5gLioqCgpgYGB7cn0KbG9jYWxlKGdyb3VwaW5nX21hcmsgPSAiLiIpCmBgYAoKKipUaGUgZGVjaW1hbCBtYXJrIGJlY29tZXMgYCxgLioqCgozLiBJIGRpZG7igJl0IGRpc2N1c3MgdGhlIGBkYXRlX2Zvcm1hdGAgYW5kIGB0aW1lX2Zvcm1hdGAgb3B0aW9ucyB0byBgbG9jYWxlKClgLiBXaGF0IGRvIHRoZXkgZG8/IENvbnN0cnVjdCBhbiBleGFtcGxlIHRoYXQgc2hvd3Mgd2hlbiB0aGV5IG1pZ2h0IGJlIHVzZWZ1bC4KCmBgYHtyfQpsaWJyYXJ5KGhtcykKcGFyc2VfZGF0ZSgiMDgvMDkvMjAxMCIsIGxvY2FsZSA9IGxvY2FsZShkYXRlX2Zvcm1hdCA9ICIlZC8lbS8lWSIpKQpwYXJzZV90aW1lKCIxODIwIiwgbG9jYWxlID0gbG9jYWxlKHRpbWVfZm9ybWF0ID0gIiVIJU0iKSkKYGBgCgoqKlRoZXNlIG9wdGlvbnMgYWxsb3cgeW91IHRvIGRlZmluZSB0aGUgd2F5IGRhdGVzIGFuZCB0aW1lcyBhcmUgZm9ybWF0dGVkIHNvIHRoZXkgY2FuIGJlIHBhcnNlZCBjb3JyZWN0bHkuKioKCjQuIElmIHlvdSBsaXZlIG91dHNpZGUgdGhlIFVTLCBjcmVhdGUgYSBuZXcgbG9jYWxlIG9iamVjdCB0aGF0IGVuY2Fwc3VsYXRlcyB0aGUgc2V0dGluZ3MgZm9yIHRoZSB0eXBlcyBvZiBmaWxlIHlvdSByZWFkIG1vc3QgY29tbW9ubHkuCgpgYGB7cn0KbG9jYWxlKAogIGRhdGVfbmFtZXMgPSAiZW4iLAogIGRhdGVfZm9ybWF0ID0gIiVkLyVtLyVZIiwKICB0aW1lX2Zvcm1hdCA9ICIlaDolTSVwICVaIiwKICBkZWNpbWFsX21hcmsgPSAiLiIsCiAgZ3JvdXBpbmdfbWFyayA9ICIsIiwKICB0eiA9ICJBdXN0cmFsaWEvU3lkbmV5IiwKICBlbmNvZGluZyA9ICJVVEYtOCIKKQpgYGAKCjUuIFdoYXTigJlzIHRoZSBkaWZmZXJlbmNlIGJldHdlZW4gYHJlYWRfY3N2KClgIGFuZCBgcmVhZF9jc3YyKClgPwoKKipUaGUgZGlmZmVyZW5jZSBpcyB0aGUgZGVsaW1pdGluZyBjaGFyYWN0ZXIgLSBgLGAgaW4gdGhlIGZvcm1lciwgYDtgIGluIHRoZSBsYXR0ZXIuKioKCjYuIFdoYXQgYXJlIHRoZSBtb3N0IGNvbW1vbiBlbmNvZGluZ3MgdXNlZCBpbiBFdXJvcGU/IFdoYXQgYXJlIHRoZSBtb3N0IGNvbW1vbiBlbmNvZGluZ3MgdXNlZCBpbiBBc2lhPyBEbyBzb21lIGdvb2dsaW5nIHRvIGZpbmQgb3V0LgoKKipBc2lkZSBmcm9tIFVURi04LCBzb21lIG9mIHRoZSBtb3N0IGNvbW1vbmx5IHVzZWQgZW5jb2RpbmdzIGluIG1vZGVybiBkb2N1bWVudHMgKEFTQ0lJIGhhcyBiZWNvbWUgbGVzcyBjb21tb24gaW4gdGhlIDIxc3QgY2VudHVyeSkgd291bGQgYXBwZWFyIHRvIGluY2x1ZGUgdGhlIElTTy04ODU5IHZhcmlhbnRzIChlLmcuLCBJU08tODg1OS0xIGluIFdlc3Rlcm4gRXVyb3BlKSwgR0IxODAzMCBpbiBDaGluYSB3aGljaCBpcyBhIHRyYW5zZm9ybWF0aW9uIG9mIFVuaWNvZGUsIGFuZCB0aGUgV2luZG93cyBjaGFyYWN0ZXIgc2V0cyAoZS5nLiwgV2luZG93cy0xMjUxIGZvciBDeXJpbGxpYyBhbHBoYWJldHMgYW5kIFdpbmRvd3MtMTI1MiBmb3IgV2VzdGVybi9MYXRpbikuIFNvbWUgc3RhdHMgc2hvdyB0aGF0IFt0aGUgdmFzdCBtYWpvcml0eSBvZiB3ZWJzaXRlcyBhcmUgbm93IHVzaW5nIFVURi04XShodHRwczovL3czdGVjaHMuY29tL3RlY2hub2xvZ2llcy9vdmVydmlldy9jaGFyYWN0ZXJfZW5jb2RpbmcvYWxsKSBidXQgZGF0YSBmaWxlcyBtYXkgYmUgYSBkaWZmZXJlbnQgc3RvcnkuKioKCjcuIEdlbmVyYXRlIHRoZSBjb3JyZWN0IGZvcm1hdCBzdHJpbmcgdG8gcGFyc2UgZWFjaCBvZiB0aGUgZm9sbG93aW5nIGRhdGVzIGFuZCB0aW1lczoKCmBgYHtyfQpkMSA8LSAiSmFudWFyeSAxLCAyMDEwIgpkMiA8LSAiMjAxNS1NYXItMDciCmQzIDwtICIwNi1KdW4tMjAxNyIKZDQgPC0gYygiQXVndXN0IDE5ICgyMDE1KSIsICJKdWx5IDEgKDIwMTUpIikKZDUgPC0gIjEyLzMwLzE0IiAjIERlYyAzMCwgMjAxNAp0MSA8LSAiMTcwNSIKdDIgPC0gIjExOjE1OjEwLjEyIFBNIgpwYXJzZV9kYXRlKGQxLCAiJUIgJWQsICVZIikKcGFyc2VfZGF0ZShkMiwgIiVZLSViLSVkIikKcGFyc2VfZGF0ZShkMywgIiVkLSViLSVZIikKcGFyc2VfZGF0ZShkNCwgIiVCICVkICglWSkiKQpwYXJzZV9kYXRlKGQ1LCAiJW0vJWQvJXkiKQpwYXJzZV90aW1lKHQxLCAiJUglTSIpCnBhcnNlX3RpbWUodDIsICIlSTolTTolT1MgJXAiKQpgYGAK</div>
 
 
 
