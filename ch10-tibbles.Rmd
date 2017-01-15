@@ -1,0 +1,97 @@
+---
+title: "Chapter 10: Tibbles"
+output: html_notebook
+---
+
+# 10.5 Exercises
+
+1. How can you tell if an object is a tibble? (Hint: try printing `mtcars`, which is a regular data frame).
+
+```{r}
+mtcars
+```
+
+```{r}
+mtcars_tbl <- as_tibble(mtcars)
+mtcars_tbl
+```
+
+**Unfortunately this doesn't work in an R Notebook because it has its own tabular presentation tool that works on both data frames and tibbles. The difference is clear if these commands are run at the console or in a regular script - a data frame will display all rows and all variables in the dataset and doesn't show variable types. The tibble's output will begin with "A tibble:" and the dimensions of the dataset (number of rows and columns), then a neatly formatted set of variable names with type underneath each one, then 10 rows of data, followed by a summary of how many more rows and variables aren't displayed.**
+
+2. Compare and contrast the following operations on a `data.frame` and equivalent tibble. What is different? Why might the default data frame behaviours cause you frustration?
+
+```{r}
+df <- data.frame(abc = 1, xyz = "a")
+df$x
+df[, "xyz"]
+df[, c("abc", "xyz")]
+```
+
+```{r}
+df <- tibble(abc = 1, xyz = "a")
+df$x
+df[, "xyz"]
+df[, c("abc", "xyz")]
+```
+
+**The data frame has converted `xyz` to a factor but the tibble keeps it as a string. The data frame does partial matching so that in the first subsetting command it matches `df$x` to `xyz`, while the tibble never does partial matching and so returns that there is no column `x`. Working with a tibble means that it will only do what you directly instruct it to, so that your data and your output aren't going to be at risk of ending up in a form you don't expect.**
+
+3. If you have the name of a variable stored in an object, e.g. `var <- "mpg"`, how can you extract the reference variable from a tibble?
+
+```{r}
+var <- "mpg"
+mtcars_tbl$var
+```
+
+```{r}
+mtcars_tbl[[var]]
+```
+
+**Only the `[[` syntax works with a variable - the `$` syntax would need a column name directly entered into it.**
+
+4. Practice referring to non-syntactic names in the following data frame by:
+
+  1. Extracting the variable called `1`.
+
+  2. Plotting a scatterplot of `1` vs `2`.
+
+  3. Creating a new column called `3` which is `2` divided by `1`.
+
+  4. Renaming the columns to `one`, `two` and `three`.
+
+```{r}
+annoying <- tibble(
+  `1` = 1:10,
+  `2` = `1` * 2 + rnorm(length(`1`))
+)
+
+# Answers
+annoying$`1`
+annoying %>%
+  ggplot(aes(x = `1`, y = `2`)) +
+    geom_point()
+annoying2 <- annoying %>%
+  mutate(`3` = `2` / `1`)
+annoying2
+annoying3 <- annoying2 %>%
+  rename("one" = `1`, "two" = `2`, "three" = `3`)
+annoying3
+```
+
+5. What does tibble::enframe() do? When might you use it?
+
+```{r}
+?enframe
+enframe(1:3)
+enframe(c(a = 5, b = 7))
+```
+
+**`enframe` creates a two-column tibble from a vector or list. Each row is a name-value pair. The names for each row can be passed in (as in the second example) or if only a vector of values with no names is passed in, the names will be assigned as numeric values counting from 1. You might use it when you have existing vector or list data that you want to be able to manipulate and analyse using standard dataframe methods.**
+
+6. What option controls how many additional column names are printed at the footer of a tibble?
+
+```{r}
+package?tibble
+```
+
+**`tibble.max_extra_cols` (defaults to 100 extra columns).**
