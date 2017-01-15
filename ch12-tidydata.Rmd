@@ -1,0 +1,68 @@
+---
+title: "Chapter 12: Tidy data"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+```
+
+# 12.2 Tidy data
+
+## 12.2.1 Exercises
+
+1. Using prose, describe how the variables and observations are organised in each of the sample tables.
+
+**`table2`: The `type` column indicates whether each row of data contains an observation of the number of cases or the population. This then means that the values for `country` and `year` are duplicated across two rows - each observation is split across those two rows.**
+
+**`table3`: The `rate` column in this case is a string that contains two separate values - `cases` and `population`. Attempting to perform any computation or aggregation with the data in this format would need this string to be broken into separate numeric variables first.**
+
+**`table4`: There are two separate tables, one for the `cases` variable and the other for `population`. Within each table the rows correspond to a country and the columns then contain separate observations on the target variable for each given year. This means that there are multiple observations within each row, yet the observations within each table are incomplete.**
+
+2. Compute the rate for `table2`, and `table4a` + `table4b`. You will need to perform four operations:
+
+  1. Extract the number of TB cases per country per year.
+  2. Extract the matching population per country per year.
+  3. Divide cases by population, and multiply by 10000.
+  4. Store back in the appropriate place.
+
+```{r}
+t2cases <- table2 %>%
+  filter(type == "cases") %>%
+  select(country, year, cases = count)
+t2pop <- table2 %>%
+  filter(type == "population") %>%
+  select(country, year, pop = count)
+t2rate <- t2cases %>%
+  left_join(t2pop, by = c("country", "year")) %>%
+  mutate(rate = (cases / pop) * 10000)
+t2rate
+```
+
+```{r}
+t4rate <- table4a %>%
+  left_join(table4b, by = c("country"), suffix = c("cases", "pop")) %>%
+  mutate(
+    `1999rate` = (`1999cases` / `1999pop`) * 10000,
+    `2000rate` = (`2000cases` / `2000pop`) * 10000
+  )
+t4rate
+```
+
+Which representation is easiest to work with? Which is hardest? Why?
+
+**`table3` would be worst of all because it requires text processing. `table2` required some intermediate steps before putting things back together but results in a generally tidy format. `table4a` and `table4b` required some extra arguments to the join function for clarity and ends up putting the calculated rates into two separate columns so it remains untidy.**
+
+3. Recreate the plot showing change in cases over time using `table2` instead of `table1`. What do you need to do first?
+
+```{r}
+library(ggplot2)
+table2 %>%
+  filter(type == "cases") %>%
+  ggplot(aes(year, count)) +
+    geom_line(aes(group = country), colour = "grey50") +
+    geom_point(aes(colour = country)) +
+    ylab("cases")
+```
+
+**I needed to filter the data to select only the rows that had numbers of cases, and then I also changed the label on the y-axis to correctly describe the variable.**
