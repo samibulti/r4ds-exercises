@@ -1,0 +1,102 @@
+---
+title: "Chapter 11: Data import"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+```
+
+# 11.2 Getting started
+
+## 11.2.2 Exercises
+
+1. What function would you use to read a file where fields were separated with “|”?
+
+```{r}
+read_delim(
+  "a|b|c
+  1|2|3
+  4|5|6",
+  "|"
+)
+```
+
+**`read_delim` can be used to read in files with an arbitrary character as the delimiter.**
+
+2. Apart from file, skip, and comment, what other arguments do read_csv() and read_tsv() have in common?
+
+```{r}
+?read_csv
+```
+
+read_csv(file, col_names = TRUE, col_types = NULL,
+  locale = default_locale(), na = c("", "NA"), quoted_na = TRUE,
+  comment = "", trim_ws = TRUE, skip = 0, n_max = Inf,
+  guess_max = min(1000, n_max), progress = interactive())
+
+read_tsv(file, col_names = TRUE, col_types = NULL,
+  locale = default_locale(), na = c("", "NA"), quoted_na = TRUE,
+  comment = "", trim_ws = TRUE, skip = 0, n_max = Inf,
+  guess_max = min(1000, n_max), progress = interactive())
+
+**Other arguments are `col_names`, `col_types`, `locale`, `na`, `quoted_na`, `trim_ws`, `n_max`, `guess_max`, and `progress`.**
+
+3. What are the most important arguments to read_fwf()?
+
+```{r}
+?read_fwf
+```
+read_fwf(file, col_positions, col_types = NULL, locale = default_locale(),
+  na = c("", "NA"), comment = "", skip = 0, n_max = Inf,
+  guess_max = min(n_max, 1000), progress = interactive())
+
+**The key arguments are `file` to indicate which file to read and `fwf_positions` or `fwf_width` (which provide the required info for `col_positions`), and then there are options to set `na`, `col_types` and `skip` to suit the data file, along with some other arguments that may be used occasionally.**
+
+4. Sometimes strings in a CSV file contain commas. To prevent them from causing problems they need to be surrounded by a quoting character, like " or '. By convention, read_csv() assumes that the quoting character will be ", and if you want to change it you’ll need to use read_delim() instead. What arguments do you need to specify to read the following text into a data frame?
+
+`"x,y\n1,'a,b'"`
+
+```{r}
+read_delim(
+  "x,y\n1,'a,b'",
+  delim = ",",
+  quote = "\'"
+)
+```
+
+5. Identify what is wrong with each of the following inline CSV files. What happens when you run the code?
+
+``` {r}
+read_csv("a,b\n1,2,3\n4,5,6")
+```
+
+**There are only two variables in the header row but three values in each subsequent row - the final values are dropped as the tibble is only set up with two variables.**
+
+```{r}
+read_csv("a,b,c\n1,2\n1,2,3,4")
+```
+
+**There are three variables defined in the header row but the data rows have either one value too few or one too many. The excess value is ignored, while when there aren't enough values in a row the final column is `NA`.**
+
+```{r}
+read_csv("a,b\n\"1")
+```
+
+**Again, it's one value short so ends up with an `NA`. It also has an escaped quotation mark before the value but is missing the closing escaped quotation mark after it, but the function still seems to read the value in okay.**
+
+```{r}
+read_csv("a,b\n1,2\na,b")
+```
+
+**There doesn't seem to be anything absolutely wrong about this file, but note that the variables become character because of the second row of data. If those values weren't there then the first row would be read in as numeric variables.**
+
+```{r}
+read_csv("a;b\n1;3")
+```
+
+**It looks like this should have used `read_csv2` for the semicolons to be considered as separators - see below.**
+
+```{r}
+read_csv2("a;b\n1;3")
+```
