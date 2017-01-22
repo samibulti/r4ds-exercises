@@ -148,3 +148,45 @@ preg <- tribble(
 preg %>%
   gather("sex", "n", `male`:`female`)
 ```
+
+# 12.4 Separating and uniting
+
+## 12.4.3 Exercises
+
+1. What do the `extra` and `fill` arguments do in `separate()`? Experiment with the various options for the following two toy datasets.
+
+```{r}
+?separate
+```
+
+**These two arguments allow us to specify what happens with any row(s) that has too many (`extra`) or too few (`fill`) pieces to fit the `into` variables. By default, warnings will be issued in both cases, but we can instead `drop` extra values or `merge` them into the final column, and we can specify whether missing values should be filled on the right (final column(s)) or left.**
+
+```{r}
+tibble(x = c("a,b,c", "d,e,f,g", "h,i,j")) %>% 
+  separate(x, c("one", "two", "three"))
+tibble(x = c("a,b,c", "d,e,f,g", "h,i,j")) %>% 
+  separate(x, c("one", "two", "three"), extra = "drop")
+tibble(x = c("a,b,c", "d,e,f,g", "h,i,j")) %>% 
+  separate(x, c("one", "two", "three"), extra = "merge")
+```
+
+```{r}
+tibble(x = c("a,b,c", "d,e", "f,g,i")) %>% 
+  separate(x, c("one", "two", "three"))
+tibble(x = c("a,b,c", "d,e", "f,g,i")) %>% 
+  separate(x, c("one", "two", "three"), fill = "right")
+tibble(x = c("a,b,c", "d,e", "f,g,i")) %>% 
+  separate(x, c("one", "two", "three"), fill = "left")
+```
+
+2. Both `unite()` and `separate()` have a `remove` argument. What does it do? Why would you set it to `FALSE`?
+
+**It removes the input column(s) after you've separated or united your data. The default is `TRUE` but you would set it to `FALSE` if you wanted to retain the original data for any reason, whether that is in case you might need to re-run the function with adjustments or if the original data format is also useful for analysis in some way.**
+
+3. Compare and contrast `separate()` and `extract()`. Why are there three variations of separation (by position, by separator, and with groups), but only one `unite`?
+
+```{r}
+?tidyr::extract
+```
+
+**`extract()` lets you specify regular expressions with capturing groups and would support more complex regular expressions to process the values - if the groups don't match then the data will come out as `NA`. `separate()` is the more simple approach that likely works for most circumstances where you just need to specify a separator, and it also separates by position. There are three approaches to separation but only one for uniting because data that requires separation can come in any variety of forms and you need a method that works for the specific form your data comes in - it might have a separator, it might not have separators but have fixed positioning, etc. On the other hand, joining values together can be dealt with in a single method that provides the necessary parameters (e.g., separator, which can also be set to an empty string).**
