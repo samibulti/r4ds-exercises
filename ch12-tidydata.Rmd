@@ -190,3 +190,20 @@ tibble(x = c("a,b,c", "d,e", "f,g,i")) %>%
 ```
 
 **`extract()` lets you specify regular expressions with capturing groups and would support more complex regular expressions to process the values - if the groups don't match then the data will come out as `NA`. `separate()` is the more simple approach that likely works for most circumstances where you just need to specify a separator, and it also separates by position. There are three approaches to separation but only one for uniting because data that requires separation can come in any variety of forms and you need a method that works for the specific form your data comes in - it might have a separator, it might not have separators but have fixed positioning, etc. On the other hand, joining values together can be dealt with in a single method that provides the necessary parameters (e.g., separator, which can also be set to an empty string).**
+
+# 12.5 Missing values
+
+## 12.5.1 Exercises
+
+1. Compare and contrast the `fill` arguments to `spread()` and `complete()`.
+
+```{r}
+?spread
+?complete
+```
+
+**The `fill` argument in `spread()` specifies what any missing values - both explicit and implicit - will be set to in the new columns. By default it will be `NA` but can be set to any other value. In `complete()`, the `fill` argument provides a named list that identifies for each variable whatvalue should be used when an implicit missing value is converted to explicit missing. The same value will also replace existing explicit missing values. Both approaches appear to ensure that implicit missing values become explicit, and they provide the possibility of using an alternative value instead of `NA`.**
+
+2. What does the direction argument to `fill()` do?
+
+**By default it specifies that the fill should be `down`, ie the missing value should be filled by the nearest value above it, but it can also specify `up` instead.**
