@@ -66,3 +66,85 @@ table2 %>%
 ```
 
 **I needed to filter the data to select only the rows that had numbers of cases, and then I also changed the label on the y-axis to correctly describe the variable.**
+
+# 12.3 Spreading and gathering
+
+## 12.3.3 Exercises
+
+1. Why are `gather()` and `spread()` not perfectly symmetrical?
+
+Carefully consider the following example:
+
+```{r}
+stocks <- tibble(
+  year   = c(2015, 2015, 2016, 2016),
+  half  = c(   1,    2,     1,    2),
+  return = c(1.88, 0.59, 0.92, 0.17)
+)
+stocks %>% 
+  spread(year, return)  %>% 
+  gather("year", "return", `2015`:`2016`)
+```
+
+(Hint: look at the variable types and think about column names.)
+
+**`spread()` only needs two arguments because it determines the new column names from the values in the `key` column. All it needs to do is coerce those values to be strings so they can function as variable names. `gather()` needs to be told the new column names and then which existing variables are to be converted into those key-value columns.**
+
+Both `spread()` and `gather()` have a convert argument. What does it do?
+
+**If `convert = TRUE` is passed to either function then it will attempt to convert the new variables to an appropriate type. Note that `year` in the example code above has ended up as a string, because the `gather()` function had used the `2015` and `2016` variable names as strings. Running the same code with conversion will see it return to being a numeric variable, as  shown below.**
+
+```{r}
+stocks <- tibble(
+  year   = c(2015, 2015, 2016, 2016),
+  half  = c(   1,    2,     1,    2),
+  return = c(1.88, 0.59, 0.92, 0.17)
+)
+stocks %>% 
+  spread(year, return)  %>% 
+  gather("year", "return", `2015`:`2016`, convert = TRUE)
+```
+
+2. Why does this code fail?
+
+```{r}
+table4a %>% 
+  gather(1999, 2000, key = "year", value = "cases")
+```
+
+**The existing variable names are non-syntactic so the arguments need to be surrounded by backticks - see below.**
+
+```{r}
+table4a %>% 
+  gather(`1999`, `2000`, key = "year", value = "cases")
+```
+
+3. Why does spreading this tibble fail? How could you add a new column to fix the problem?
+
+```{r}
+people <- tribble(
+  ~name,             ~key,    ~value,
+  #-----------------|--------|------
+  "Phillip Woods",   "age",       45,
+  "Phillip Woods",   "height",   186,
+  "Phillip Woods",   "age",       50,
+  "Jessica Cordero", "age",       37,
+  "Jessica Cordero", "height",   156
+)
+people %>%
+  spread(key, value)
+```
+
+**The third row in the original dataset has the same name and key as the first row, i.e., the function runs into a situation where there are two possible values to go into the one cell for Phillip Woods's age column. You could add a column that allows the tidying function to uniquely identify people who might have the same name, e.g., add an address or a unique ID number.**
+
+4. Tidy the simple tibble below. Do you need to spread or gather it? What are the variables?
+
+```{r}
+preg <- tribble(
+  ~pregnant, ~male, ~female,
+  "yes",     NA,    10,
+  "no",      20,    12
+)
+preg %>%
+  gather("sex", "n", `male`:`female`)
+```
