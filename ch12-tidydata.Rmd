@@ -207,3 +207,82 @@ tibble(x = c("a,b,c", "d,e", "f,g,i")) %>%
 2. What does the direction argument to `fill()` do?
 
 **By default it specifies that the fill should be `down`, ie the missing value should be filled by the nearest value above it, but it can also specify `up` instead.**
+
+# 12.6 Case Study
+
+## 12.6.1 Exercises
+
+1. In this case study I set `na.rm = TRUE` just to make it easier to check that we had the correct values. Is this reasonable? Think about how missing values are represented in this dataset. Are there implicit missing values? What’s the difference between an `NA` and zero?
+
+```{r}
+who %>%
+  gather(code, value, new_sp_m014:newrel_f65) %>% 
+  mutate(code = stringr::str_replace(code, "newrel", "new_rel")) %>%
+  separate(code, c("new", "type", "sexage")) %>% 
+  select(-new, -iso2, -iso3) %>% 
+  separate(sexage, c("sex", "age"), sep = 1)
+```
+
+```{r}
+who %>%
+  gather(code, value, new_sp_m014:newrel_f65) %>% 
+  mutate(code = stringr::str_replace(code, "newrel", "new_rel")) %>%
+  separate(code, c("new", "type", "sexage")) %>% 
+  select(-new, -iso2, -iso3) %>% 
+  separate(sexage, c("sex", "age"), sep = 1) %>%
+  complete(country, year, type, sex, age)
+```
+
+**The addition of more than 10,000 rows using `complete()` on the tidy dataset suggests that there were implicit missing values. An `NA` value indicates that we don't know how many cases there were within the given combination of country, year, type, sex and age, whereas a zero indicates that there were no observed cases. Although it can be convenient and helpful when producing the data processing commands to strip out the missing values, analysis of the missing data can itself be informative, e.g., were records in some countries more likely to be incomplete?**
+
+2. What happens if you neglect the `mutate()` step? `(mutate(key = stringr::str_replace(key, "newrel", "new_rel")))`
+
+```{r}
+who %>%
+  gather(code, value, new_sp_m014:newrel_f65) %>% 
+  # mutate(code = stringr::str_replace(code, "newrel", "new_rel")) %>%
+  separate(code, c("new", "type", "sexage")) %>% 
+  select(-new, -iso2, -iso3) %>% 
+  separate(sexage, c("sex", "age"), sep = 1)
+```
+
+**The rows that have a missing underscore in the key column (values beginning with `newrel` rather than `new_rel`) won't separate properly as they will put `newrel` into the `"new"` variable, the value that should be `sexage` into the `type` column and will have nothing left to go into the `sexage` column.**
+
+3. I claimed that `iso2` and `iso3` were redundant with `country`. Confirm this claim.
+
+```{r}
+who %>%
+  group_by(country, iso2, iso3) %>%
+  summarise(count = n())
+```
+
+**Inspection of the summarised data shows that each country has a single corresponding `iso2` value and a single `iso3` value.**
+
+4. For each country, year, and sex compute the total number of cases of TB. Make an informative visualisation of the data.
+
+**A time-series line plot for each country with separate coloured lines for males and females would be informative about trends over time in each country as well as any sex differences. With more than 200 countries in the dataset a standard small multiples plot using a facet function won't be readable, so we use the `ggforce` package's paginated facet plotting capability. Because there is significant variation (orders of magitude) between countries in the number of cases a uniform scale across the facets' y-axis would mean each individual subplot isn't clearly visualised, so the `scales = "free_y"` argument is used. The pages are generated via a for loop - it takes a considerable time to run but produces plots that are generally clear and informative.**
+
+```{r}
+library(ggforce)
+who2 <- who %>%
+  gather(code, value, new_sp_m014:newrel_f65, na.rm = TRUE) %>% 
+  mutate(code = stringr::str_replace(code, "newrel", "new_rel")) %>%
+  separate(code, c("new", "type", "sexage")) %>% 
+  select(-new, -iso2, -iso3) %>% 
+  separate(sexage, c("sex", "age"), sep = 1) %>%
+  group_by(country, year, sex) %>%
+  summarise(cases = sum(value))
+p <- who2 %>%
+  ggplot(aes(x = year, y = cases, colour = sex)) +
+    geom_line() +
+    facet_wrap_paginate("country", ncol = 3, nrow = 3, scales = "free_y", page = 1)
+pages <- n_pages(p)
+for(i in 1:pages) {
+  print(
+    who2 %>%
+      ggplot(aes(x = year, y = cases, colour = sex)) +
+        geom_line() +
+        facet_wrap_paginate("country", ncol = 3, nrow = 3, scales = "free_y", page = i)
+  )
+}
+```
