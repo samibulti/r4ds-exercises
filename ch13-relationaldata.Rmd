@@ -1,0 +1,29 @@
+---
+title: "Chapter 13: Relational data"
+output: html_notebook
+---
+
+# 13.2 `nycflights13`
+
+## 13.2.1 Exercises
+
+```{r}
+library(tidyverse)
+library(nycflights13)
+```
+
+1. Imagine you wanted to draw (approximately) the route each plane flies from its origin to its destination. What variables would you need? What tables would you need to combine?
+
+**You would need `origin` and `dest` for each flight, along with the `lat` and `long` for each origin and destination airport. This means that you would need to combine the `flights` and `airports` tables.**
+
+2. I forgot to draw the relationship between `weather` and `airports`. What is the relationship and how should it appear in the diagram?
+
+**`origin` in `weather` connects to `faa` in `airports`.**
+
+3. `weather` only contains information for the origin (NYC) airports. If it contained weather records for all airports in the USA, what additional relation would it define with flights?
+
+**It would connect with `dest` in `flights`so that weather records for the destination airport could be identified as well.**
+
+4. We know that some days of the year are “special”, and fewer people than usual fly on them. How might you represent that data as a data frame? What would be the primary keys of that table? How would it connect to the existing tables?
+
+**You could have a `specialdays` table with a `dayname` as its primary key and then connect to `flights` via `year`, `month` and `day` variables.**
