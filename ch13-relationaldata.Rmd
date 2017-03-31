@@ -294,4 +294,3 @@ multi_carrier <- flights %>%
 semi_join(flights, multi_carrier) %>%
   count(tailnum, carrier)
 ```
-
