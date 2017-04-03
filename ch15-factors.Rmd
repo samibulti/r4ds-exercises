@@ -1,0 +1,146 @@
+---
+title: "Chapter 15: Factors"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(forcats)
+```
+
+# 15.3 General Social Survey
+
+## 15.3.1 Exercises
+
+1. Explore the distribution of `rincome` (reported income). What makes the default bar chart hard to understand? How could you improve the plot?
+
+```{r}
+gss_cat %>%
+  ggplot(aes(rincome)) +
+    geom_bar()
+```
+
+**The default x-axis labels aren't easily readable because of the long category names Rotating the text 90 degrees should work - alternatively, the `ggstance` has horizontal plot options that might be worth a try.**
+
+```{r}
+gss_cat %>%
+  ggplot(aes(rincome)) +
+    geom_bar() +
+    theme(axis.text.x  = element_text(angle=90))
+```
+
+2. What is the most common `relig` in this survey? What’s the most common `partyid`?
+
+```{r}
+gss_cat %>%
+  ggplot(aes(relig)) +
+    geom_bar() +
+    theme(axis.text.x  = element_text(angle=90))
+gss_cat %>%
+  ggplot(aes(partyid)) +
+    geom_bar() +
+    theme(axis.text.x  = element_text(angle=90))
+```
+
+**The most common religion is Protestant. The most common single response for party ID is Independent, but if groupings were combined based on strong + not-strong party affilitation things would look a bit different.**
+
+3. Which `relig` does `denom` (denomination) apply to? How can you find out with a table? How can you find out with a visualisation?
+
+```{r}
+gss_cat %>%
+  group_by(relig) %>%
+  count(denom) %>%
+  arrange(desc(n))
+```
+
+**Denomination is primarily applicable for Protestant religious respondents.**
+
+```{r}
+gss_cat %>%
+  ggplot(aes(x = relig, y = denom)) +
+    geom_count() +
+    theme(axis.text.x  = element_text(angle=90))
+```
+
+# 15.4 Modifying factor order
+
+## 15.4.1 Exercises
+
+1. There are some suspiciously high numbers in `tvhours`. Is the mean a good summary?
+
+```{r}
+gss_cat %>%
+  ggplot(aes(x = relig, y = tvhours)) +
+    geom_boxplot()
+```
+
+**The distribution appears to be quite skewed across most religions, so let's look at using the median as a measure of central tendency instead.**
+
+```{r}
+relig <- gss_cat %>%
+  group_by(relig) %>%
+  summarise(
+    age = mean(age, na.rm = TRUE),
+    tvhours = median(tvhours, na.rm = TRUE),
+    n = n()
+  )
+ggplot(relig, aes(tvhours, fct_reorder(relig, tvhours))) +
+  geom_point()
+```
+
+2. For each factor in `gss_cat` identify whether the order of the levels is arbitrary or principled.
+
+```{r}
+levels(gss_cat$marital)
+levels(gss_cat$race)
+levels(gss_cat$rincome)
+levels(gss_cat$partyid)
+levels(gss_cat$relig)
+levels(gss_cat$denom)
+```
+
+**`rincome` and `partyid` have a clear principled order. All of the others are largely arbitrary.**
+
+3. Why did moving “Not applicable” to the front of the levels move it to the bottom of the plot?
+
+**Because in that case the factor is on the y-axis and y-axis values are plotted going upward from the bottom.**
+
+# 15.5 Modifying factor levels
+
+## 15.5.1 Exercises
+
+1. How have the proportions of people identifying as Democrat, Republican, and Independent changed over time?
+
+```{r}
+gss_cat %>%
+  mutate(partyid = fct_collapse(partyid,
+    other = c("No answer", "Don't know", "Other party"),
+    rep = c("Strong republican", "Not str republican"),
+    ind = c("Ind,near rep", "Independent", "Ind,near dem"),
+    dem = c("Not str democrat", "Strong democrat")
+  )) %>%
+  group_by(year, partyid) %>%
+  count() %>%
+  mutate(prop = n / sum(n)) %>%
+  ggplot(aes(x = year, y = prop, colour = partyid)) +
+    geom_line() +
+    geom_point()
+```
+
+2. How could you collapse rincome into a small set of categories?
+
+```{r}
+levels(gss_cat$rincome)
+```
+
+```{r}
+gss_cat %>%
+  mutate(rincome = fct_collapse(
+    rincome,
+    "Unknown" = c("No answer", "Don't know", "Refused"),
+    "Lt $10000" = c("$8000 to 9999", "$7000 to 7999", "$6000 to 6999", "$5000 to 5999", "$4000 to 4999", "$3000 to 3999", "$1000 to 2999", "Lt $1000"),
+    "$10000 to 19999" = c("$15000 - 19999", "$10000 - 14999"),
+    "$20000 or more" = c("$25000 or more", "$20000 - 24999")
+  )) %>%
+  count(rincome)
+```
