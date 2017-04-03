@@ -96,3 +96,449 @@ abandc(abc)
 abandc(abcd)
 ```
 
+# 14.3 Matching patterns with regular expressions
+
+## 14.3.1 Basic matches
+
+### 14.3.1.1 Exercises
+
+1. Explain why each of these strings don’t match a `\`: `"\"`, `"\\"`, `"\\\"`.
+
+**NB: Error-causing code has been commented out below to prevent problems with RStudio getting confused but they can be uncommented and run to see what happens.**
+
+```{r}
+basic1 <- "a\\b"
+writeLines(basic1)
+```
+
+```{r}
+# str_view(basic1, "\")
+```
+
+**The single backslash acts as an escape character for the closing quote mark, which means the string is incomplete (there is no closing quote and the closing parenthesis is treated as being within the string still).
+
+```{r}
+# str_view(basic1, "\\")
+```
+
+**The double backslash creates a string with an escaped single backslash. But when parsed as a regexp, the single backslash is an escape character without anything following it.**
+
+```{r}
+# str_view(basic1, "\\\")
+```
+
+**The first two backslahes constitute an escaped backslash within the string. The third backslash then becomes another escape character which affects the closing quote mark and again means that the string doesn't close properly, and the call to `str_view()` again doesn't close properly. A fourth backslash is needed to provide two escaped backslashes within the string - which then allows the regexp parsing to recognise them as an escaped backslash.**
+
+```{r}
+str_view(basic1, "\\\\")
+```
+
+2. How would you match the sequence `"'\`?
+
+```{r}
+basic2 <- "prefix\"\'\\suffix"
+writeLines(basic2)
+```
+
+**The single and double quote marks need to be escaped within the string but don't need regexp escaping, so a single backslash works. The backslash needs to be escaped for both the string and regexp resulting in a sequence of four backslashes, as explained in the previous exercise.**
+
+```{r}
+str_view(basic2, "\"\'\\\\")
+```
+
+3. What patterns will the regular expression `\..\..\..` match? How would you represent it as a string?
+
+**That regexp would match a literal `.` followed by any single character, then another literal `.`, then another single character, then a third literal `.` and then another single character.**
+
+```{r}
+basic3 <- "prefix . . . suffix"
+writeLines(basic3)
+```
+
+**Each backslash in the regexp will need to be escaped within the string.**
+
+```{r}
+str_view(basic3, "\\..\\..\\..")
+```
+
+## 14.3.2 Anchors
+
+### 14.3.2.1 Exercises
+
+1. How would you match the literal string `"$^$"`?
+
+```{r}
+anchor1 <- "$^$"
+writeLines(anchor1)
+```
+
+**Each of the anchor characters will need to be escaped in the regexp, which requires a second backslash as an escape character within the string.**
+
+```{r}
+str_view(anchor1, "^\\$\\^\\$$")
+```
+
+2. Given the corpus of common words in `stringr::words`, create regular expressions that find all words that:
+
+  1. Start with “y”.
+  2. End with “x”
+  3. Are exactly three letters long. (Don’t cheat by using `str_length()`!)
+  4. Have seven letters or more.
+
+Since this list is long, you might want to use the match argument to str_view() to show only the matching or non-matching words.
+
+```{r}
+str_view(words, "^y", match = TRUE)
+```
+
+```{r}
+str_view(words, "x$", match = TRUE)
+```
+
+```{r}
+str_view(words, "^...$", match = TRUE)
+```
+
+```{r}
+str_view(words, "^.......", match = TRUE)
+```
+
+## 14.3.3 Character classes and alternatives
+
+### 14.3.3.1 Exercises
+
+1. Create regular expressions to find all words that:
+
+  1. Start with a vowel.
+  2. That only contain consonants. (Hint: thinking about matching “not”-vowels.)
+  3. End with ed, but not with eed.
+  4. End with ing or ise.
+
+```{r}
+str_view(words, "^[aeiou]", match = TRUE)
+```
+
+**Note that from the content in this section of the book I could work out how to create a regexp that would match a character that isn't a vowel, but as most words have at least one consonant but also one or more vowels that didn't provide the solution. The missing information at this stage is about repetition and the `+` sign. Once I searched and found that information it was possible to combine the not-vowel regexp with repetition and anchors.**
+
+```{r}
+str_view(words, "^[^aeiou]+$", match = TRUE)
+```
+
+```{r}
+str_view(words, "[^e]ed$", match = TRUE)
+```
+
+```{r}
+str_view(words, "ing$|ise$", match = TRUE)
+```
+
+2. Empirically verify the rule “i before e except after c”.
+
+```{r}
+str_view(words, "cie|[^c]ei", match = TRUE)
+```
+
+3. Is “q” always followed by a “u”?
+
+```{r}
+str_view(words, "q[^u]", match = TRUE)
+```
+
+4. Write a regular expression that matches a word if it’s probably written in British English, not American English.
+
+```{r}
+str_view(words, "our|ise", match = TRUE)
+```
+
+5. Create a regular expression that will match telephone numbers as commonly written in your country.
+
+```{r}
+phone <- "(02) 9230 5555"
+str_view(phone, "\\(\\d\\d\\) \\d\\d\\d\\d \\d\\d\\d\\d")
+```
+
+## 14.3.4 Repetition
+
+### 14.3.4.1 Exercises
+
+1. Describe the equivalents of `?`, `+`, `*` in `{m,n}` form.
+
+`?` = `{0,1}`
+`+` = `{1,}`
+`*` = `{0,}`
+
+2. Describe in words what these regular expressions match: (read carefully to see if I’m using a regular expression or a string that defines a regular expression.)
+
+  1. `^.*$`
+  
+  **Anchored at the start and end, with repetition of 0 or more characters matching the `.` operator (i.e., anything other than a newline). The result is it will match any single-line string.**
+  
+  2. `"\\{.+\\}"`
+  
+  **This is a string representation of the regexp `\{.+\}`, which will match text anywhere in the string (non-anchored) that contains opening and closing curly braces with at least one character between the braces.**
+  
+  3. `\d{4}-\d{2}-\d{2}`
+  
+  **This would match text anywhere in the strong that contains exactly 4 digits followed by a dash, then another 2 digits followed by another dash and then a final 2 digits.**
+  
+  4. `"\\\\{4}"`
+  
+  **This is a string representation of the regexp `\\{4}`, which would match text anywhere in the string that contains 4 backslash characters.**
+
+3. Create regular expressions to find all words that:
+
+  1. Start with three consonants.
+  2. Have three or more vowels in a row.
+  3. Have two or more vowel-consonant pairs in a row.
+
+```{r}
+str_view(words, "^[^aeiou]{3}", match = TRUE)
+```
+
+```{r}
+str_view(words, "[aeiou]{3,}", match = TRUE)
+```
+
+```{r}
+str_view(words, "([aeiou][^aeiou]){2,}", match = TRUE)
+```
+
+4. Solve the beginner regexp crosswords at https://regexcrossword.com/challenges/beginner.
+
+## 14.3.5 Grouping and backreferences
+
+### 14.3.5.2 Exercises
+
+1. Describe, in words, what these expressions will match:
+
+  1. `(.)\1\1`
+  
+  **Any character (other than a newline) repeated three times.**
+  
+  2. `"(.)(.)\\2\\1"`
+  
+  **Regexp is `(.)(.)\2\1` and will match a pair of characters (other than newline) that are immediately followed by the same pair in reverse order (e.g., "abba").**
+  
+  3. `(..)\1`
+  
+  **A pair of characters (other than newline) that are immediately repeated in the same order.**
+  
+  4. `"(.).\\1.\\1"`
+  
+  **Regexp is `(.).\1.\1` and will match text where you have a particular character (other than newline) followed by another character, then a repeat of the first, then another character, and then a third repeat of the first character As an example, "banana" would produce a match from the second letter of the word through to the end (the two characters between the three `a`'s happen to both be `n` but that isn't a requirement to match this expression).**
+  
+  5. `"(.)(.)(.).*\\3\\2\\1"`
+  
+  **Regexp is `(.)(.)(.).*\3\2\1` and will match text where you have three characters at the beginning, then any number (including zero) of other characters, and then at the end the first three characters in reverse order.**
+
+2. Construct regular expressions to match words that:
+
+  1. Start and end with the same character.
+  2. Contain a repeated pair of letters (e.g. “church” contains “ch” repeated twice.)
+  3. Contain one letter repeated in at least three places (e.g. “eleven” contains three “e”s.)
+  
+```{r}
+str_view(words, "^(.).*\\1$", match = TRUE)
+```
+
+```{r}
+str_view(words, "(..).*\\1", match = TRUE)
+```
+
+```{r}
+str_view(words, "(.).*\\1.*\\1", match = TRUE)
+```
+
+# 14.4 Tools
+
+## 14.4.1 Detect matches
+
+## 14.4.2 Exercises
+
+1. For each of the following challenges, try solving it by using both a single regular expression, and a combination of multiple str_detect() calls.
+
+  1. Find all words that start or end with x.
+  2. Find all words that start with a vowel and end with a consonant.
+  3. Are there any words that contain at least one of each different vowel?
+
+```{r}
+str_subset(words, "^x|x$")
+str_subset(words, "^[aeiou].*[^aeiou]$")
+words %>%
+  str_subset("a") %>%
+  str_subset("e") %>%
+  str_subset("i") %>%
+  str_subset("o") %>%
+  str_subset("u")
+```
+
+2. What word has the highest number of vowels? What word has the highest proportion of vowels? (Hint: what is the denominator?)
+
+```{r}
+df <- tibble(
+  word = words, 
+  i = seq_along(word)
+)
+df %>%
+  mutate(vowels = str_count(word, "[aeiou]")) %>%
+  arrange(desc(vowels))
+df %>%
+  mutate(
+    vowels = str_count(word, "[aeiou]"),
+    letters = str_count(word, "."),
+    prop_vowels = (vowels / letters)
+  ) %>%
+  arrange(desc(prop_vowels))
+```
+
+## 14.4.3 Extract matches
+
+### 14.4.3.1 Exercises
+
+1. In the previous example, you might have noticed that the regular expression matched “flickered”, which is not a colour. Modify the regex to fix the problem.
+
+```{r}
+colours <- c("red", "orange", "yellow", "green", "blue", "purple")
+colour_match <- str_c(colours, collapse = "|")
+colour_match <- str_c("\\b(", colour_match, ")\\b")
+more <- sentences[str_count(sentences, colour_match) > 1]
+str_view_all(more, colour_match)
+```
+
+2. From the Harvard sentences data, extract:
+
+  1. The first word from each sentence.
+  2. All words ending in `ing`.
+  3. All plurals.
+
+```{r}
+str_extract(sentences, "^[A-Z|a-z]*\\b")
+str_extract_all(sentences, "\\b[A-Z|a-z]*ing\\b", simplify = TRUE)
+# Note that this is far from perfect as non-plurals can end with the same letter(s)
+str_extract_all(sentences, "\\b[A-Z|a-z]*s\\b", simplify = TRUE)
+```
+
+## 14.4.4 Grouped matches
+
+### 14.4.4.1 Exercises
+
+1. Find all words that come after a “number” like “one”, “two”, “three” etc. Pull out both the number and the word.
+
+```{r}
+# We'll limit to single-digit numbers but this list could be extended
+numbers <- "(zero|one|two|three|four|five|six|seven|eight|nine|ten) ([^ ]+)"
+sentences %>%
+  str_subset(numbers) %>%
+  str_match(numbers)
+```
+
+2. Find all contractions. Separate out the pieces before and after the apostrophe.
+
+```{r}
+contractions <- "\\b[A-Z|a-z]+'[A-Z|a-z]+\\b"
+sentences %>%
+  str_subset(contractions) %>%
+  str_match(contractions)
+```
+
+## 14.4.5 Replacing matches
+
+### 14.4.5.1 Exercises
+
+1. Replace all forward slashes in a string with backslashes.
+
+```{r}
+replace1 <- "www dot twitter dot com / testing / regexp / out"
+writeLines(str_replace_all(replace1, "/", "\\\\"))
+```
+
+2. Implement a simple version of `str_to_lower()` using `replace_all()`.
+
+```{r}
+replace2 <- "Star War: Retribution Of The Darth"
+str_replace_all(
+  replace2,
+  c("A" = "a", "B" = "b", "C" = "c", "D" = "d", "E" = "e", "F" = "f", "G" = "g", "H" = "h", "I" = "i", "J" = "j", "K" = "k", "L" = "l", "M" = "m", "N" = "n", "O" = "o", "P" = "p", "Q" = "q", "R" = "r", "S" = "s", "T" = "t", "U" = "u", "V" = "v", "W" = "w", "X" = "x", "Y" = "y", "Z" = "z")
+)
+```
+
+3. Switch the first and last letters in words. Which of those strings are still words?
+
+```{r}
+str_replace(words, "^(.)(.*)(.)$", "\\3\\2\\1")
+```
+
+## 14.4.6 Splitting
+
+### 14.4.6.1 Exercises
+
+1. Split up a string like `"apples, pears, and bananas"` into individual components.
+
+```{r}
+splitting1 <- "apples, pears and bananas"
+str_split(splitting1, boundary("word"))
+```
+
+2. Why is it better to split up by `boundary("word")` than `" "`?
+
+**Words can have trailing punctuation that won't be removed if you use a single-space string. The boundary approach isolates just the word without any adjacent special characters.**
+
+3. What does splitting with an empty string (`""`) do? Experiment, and then read the documentation.
+
+```{r}
+str_split(splitting1, "")
+?str_split
+```
+
+**It splits the string into individual characters - as the documentation describes it, an empty string as the pattern is equivalent to `boundary(character)`.**
+
+# 14.5 Other types of pattern
+
+## 14.5.1 Exercises
+
+1. How would you find all strings containing `\` with `regex()` vs. with `fixed()`?
+
+```{r}
+otherpatterns1 <- c("Backslash \\ after \\ every \\ word", "Just one \\ backslash", "No backslashes to be found here")
+str_view_all(otherpatterns1, regex("\\\\"))
+str_view_all(otherpatterns1, fixed("\\"))
+```
+
+2. What are the five most common words in sentences?
+
+```{r}
+# I'm not sure if there's a more straightforward way to manage the data format
+
+# Extract the words from all sentences as a matrix
+sentence_matrix <- str_extract_all(sentences, boundary("word"), simplify = TRUE)
+# Convert to a vector
+sentence_vec <- c(sentence_matrix)
+# Now make it a tibble and convert to lower case while we're at it
+sentence_tbl <- tibble(word = str_to_lower(sentence_vec))
+sentence_tbl %>%
+  count(word) %>%
+  arrange(desc(n)) %>%
+  head(6)
+```
+
+# 14.7 `stringi`
+
+## 14.7.1 Exercises
+
+1. Find the `stringi` functions that:
+
+  1. Count the number of words.
+  
+  **`stri_count_words()` (which is derived from `stri_count_boundaries()`).**
+  
+  2. Find duplicated strings.
+  
+  **`stri_duplicated()` and `stri_deuplicated_any()`.**
+  
+  3. Generate random text.
+  
+  **`stri_rand_strings()`, `stri_rand_lipsum()` and `stri_rand_shuffle()`.**
+
+2. How do you control the language that `stri_sort()` uses for sorting?
+
+**You can pass a `locale` argument in the function call and there are additional options via `stri_opts_collator`.**
