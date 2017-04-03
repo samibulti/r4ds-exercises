@@ -1,0 +1,98 @@
+---
+title: "Chapter 14: Strings"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(stringr)
+```
+
+# 14.2 String basics
+
+## 14.2.5 Exercises
+
+1. In code that doesn’t use stringr, you’ll often see `paste()` and `paste0()`. What’s the difference between the two functions? What stringr function are they equivalent to? How do the functions differ in their handling of `NA`?
+
+```{r}
+paste("a", "b", "c")
+paste0("a", "b", "c")
+paste("a", "b", "c", sep = "")
+
+x <- c("a", "b", "c")
+y <- c("1", "2", "3")
+
+paste(x, y)
+paste0(x, y)
+
+paste(x, y, sep = ",", collapse = ";")
+paste0(x, y, collapse = ";")
+```
+
+**`paste0` is equivalent to `paste` with `sep = ""` but slightly more efficient. They're equivalent to the `str_c` function, which uses `sep = ""` as its default (similar to `paste0`, but can be modified). In terms of `NA`, where `str_c` provides an `NA` value as output for any concatenation operation that had a n `NA` as part of its input, the `paste` functions coerce the `NA` input to a string value of `"NA"` instead.**
+
+2. In your own words, describe the difference between the `sep` and `collapse` arguments to `str_c()`.
+
+```{r}
+str_c(x, y, sep = ",", collapse = NULL)
+str_c(x, y, sep = ",", collapse = ";")
+```
+
+**`str_c` can be passed multiple input arguments, each of which can be a vector with containing multiple items. `sep` is the separator that will go between the items drawn from the input arguments, e.g., between the first (or only) value in the first input argument and the first (or only) value in the second input argument - in the example above, between `x[1]` and `y[1]` - items with separators between them will continue to be added until all of the items in the longest input argument have been used (with reuse of items for any shorter vectors). If `collapse` is given a non-`NULL` value then instead of returning a vector of concatenated strings, the strings that have been created will then be joined together with the character(s) specified in the `collapse` argument between each of the strings.**
+
+3. Use `str_length()` and `str_sub()` to extract the middle character from a string. What will you do if the string has an even number of characters?
+
+```{r}
+odd <- "This string has 29 characters"
+str_sub(odd, str_length(odd)/2 + 0.5, -(str_length(odd)/2 + 0.5))
+```
+
+**This approach appears to work to extract the central two characters from a string with even-numbered length.**
+
+```{r}
+even <- "This string has 30 characters."
+str_sub(even, str_length(even)/2 + 0.5, -(str_length(even)/2 + 0.5))
+```
+
+4. What does `str_wrap()` do? When might you want to use it?
+
+**It takes a string and inserts newline characters to make the text wrap onto multiple lines with a specified target line width - indentation of first line and subsequent lines is also possible. You might use it when you need to display output and controlling the formatting of its presentation is important.**
+
+5. What does `str_trim()` do? What’s the opposite of `str_trim()`?
+
+**`str_trim()` removes whitespace from the left and/or right ends of strings. The opposite is `str_pad()`.**
+
+6. Write a function that turns (e.g.) a vector c("a", "b", "c") into the string `a, b, and c`. Think carefully about what it should do if given a vector of length 0, 1, or 2.
+
+```{r}
+abandc <- function (string) {
+  len <- length(string)
+  if (len == 0) {
+    return("no items")
+  } else if (len == 1) {
+    return(str_c(string))
+  } else if (len == 2) {
+    return(str_c(string, collapse = " and "))
+  } else {
+    # with length >= 3 comma separators are needed on all items but then "and" is needed on the last one so we need to work with subsets of the complete vector.
+    str_c(
+      str_c(string[-length(string)], collapse = ", "),
+      string[length(string)],
+      sep = ", and "
+    )
+  }
+}
+
+empty <- NULL
+a <- c("a")
+ab <- c("a", "b")
+abc <- c("a", "b", "c")
+abcd <- c("a", "b", "c", "d")
+
+abandc(empty)
+abandc(a)
+abandc(ab)
+abandc(abc)
+abandc(abcd)
+```
+
