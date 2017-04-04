@@ -1,0 +1,109 @@
+---
+title: "Chapter 19: Functions"
+output: html_notebook
+---
+
+# 19.2 When should you write a function?
+
+## 19.2.1 Practice
+
+1. Why is `TRUE` not a parameter to `rescale01()`? What would happen if `x` contained a single missing value, and `na.rm` was `FALSE`?
+
+```{r}
+rescale01_1 <- function(x) {
+  rng <- range(x, na.rm = FALSE)
+  (x - rng[1]) / (rng[2] - rng[1])
+}
+rescale01_1(c(1, 2, 3, NA, 5))
+```
+
+**With `na.rm = FALSE` the function doesn't rescale the non-missing values. It seems clear that nobody would want to have the option to produce this behaviour and that in any vector where there are missing values, the scaling should be carried out for all of the non-missing values. For that reason, there is no justification for including a parameter to control that behaviour.**
+
+2. In the second variant of `rescale01()`, infinite values are left unchanged. Rewrite `rescale01()` so that `-Inf` is mapped to `0`, and `Inf` is mapped to `1`.
+
+```{r}
+rescale01_2 <- function(x) {
+  rng <- range(x, na.rm = TRUE, finite = TRUE)
+  x[x == -Inf] <- rng[1]
+  x[x == Inf] <- rng[2]
+  (x - rng[1]) / (rng[2] - rng[1])
+}
+rescale01_2(c(1, 2, 3, NA, 5, Inf, -Inf))
+```
+
+3. Practice turning the following code snippets into functions. Think about what each function does. What would you call it? How many arguments does it need? Can you rewrite it to be more expressive or less duplicative?
+
+`mean(is.na(x))`
+
+```{r}
+# Calculate the proportion of the values in a vector that are missing.
+prop_na <- function(x) {
+  mean(is.na(x))
+}
+prop_na(c(1, 2, 3, NA, 5))
+```
+
+`x / sum(x, na.rm = TRUE)`
+
+```{r}
+# Assuming all non-negative values, calculate values as proportions of the total
+prop_of_total <- function(x) {
+  x / sum(x, na.rm = TRUE)
+}
+prop_of_total(c(1, 2, 3, NA, 4))
+```
+
+`sd(x, na.rm = TRUE) / mean(x, na.rm = TRUE)`
+
+```{r}
+# Coefficient of variation (also known as relative standard deviation)
+cv <- function(x) {
+  sd(x, na.rm = TRUE) / mean(x, na.rm = TRUE)
+}
+cv(c(1, 2, 3, NA, 4))
+```
+
+4. Follow http://nicercode.github.io/intro/writing-functions.html to write your own functions to compute the variance and skew of a numeric vector.
+
+```{r}
+variance <- function(x) {
+  m <- mean(x)
+  n <- length(x)
+  sum((x - m) ^ 2) / (n - 1)
+}
+var(c(0:10))
+variance(c(0:10))
+```
+
+```{r}
+skewness <- function(x) {
+  m <- mean(x)
+  v <- var(x)
+  n <- length(x)
+  third_moment <- sum((x - m) ^ 3) / (n - 2)
+  third_moment / (v ^ (3 / 2))
+}
+normdist <- rnorm(10000)
+skewness(normdist)
+```
+
+5. Write `both_na()`, a function that takes two vectors of the same length and returns the number of positions that have an `NA` in both vectors.
+
+```{r}
+both_na <- function(x, y) {
+  sum(is.na(x) & is.na(y))
+}
+both_na(c(1, 2, 3, NA, 5), c(NA, 2, 3, NA, 5))
+both_na(c(1, NA, NA, NA, 5), c(1, NA, 3, NA, 5))
+```
+
+6. What do the following functions do? Why are they useful even though they are so short?
+
+`is_directory <- function(x) file.info(x)$isdir`
+`is_readable <- function(x) file.access(x, 4) == 0`
+
+**`is_directory` checks whether the value(s) passed to it are directories. `is_readable` checks whether the value(s) passed to it are files/directories that have read permission. The function names make obvious what they do and provide an intuitive way for people to run these checks without having to remember exactly what syntax needs to be used.**
+
+7. Read the [complete lyrics](https://en.wikipedia.org/wiki/Little_Bunny_Foo_Foo) to “Little Bunny Foo Foo”. There’s a lot of duplication in this song. Extend the initial piping example to recreate the complete song, and use functions to reduce the duplication.
+
+**I'll come back to this.**
