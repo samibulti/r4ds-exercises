@@ -107,3 +107,49 @@ both_na(c(1, NA, NA, NA, 5), c(1, NA, 3, NA, 5))
 7. Read the [complete lyrics](https://en.wikipedia.org/wiki/Little_Bunny_Foo_Foo) to “Little Bunny Foo Foo”. There’s a lot of duplication in this song. Extend the initial piping example to recreate the complete song, and use functions to reduce the duplication.
 
 **I'll come back to this.**
+
+# 19.3 Functions are for humans and computers
+
+## 19.3.1 Exercises
+
+1. Read the source code for each of the following three functions, puzzle out what they do, and then brainstorm better names.
+
+```{r}
+f1 <- function(string, prefix) {
+  substr(string, 1, nchar(prefix)) == prefix
+}
+f2 <- function(x) {
+  if (length(x) <= 1) return(NULL)
+  x[-length(x)]
+}
+f3 <- function(x, y) {
+  rep(y, length.out = length(x))
+}
+
+f1("this is a string", "this")
+f1("this is a string", "is a")
+
+f2(c("a", "b", "c", "d"))
+f2(1:10)
+
+f3(c(1:5), c("a", "b", "c", "d", "e", "f", "g", "h", "i", "j"))
+f3(c(1:5), c("a", "b", "c"))
+```
+**`f1` could be renamed `match_prefix`. `f2` could be renamed `drop_last`. `f3` could be renamed `match_length` but there might be something better.
+
+2. Take a function that you’ve written recently and spend 5 minutes brainstorming a better name for it and its arguments.
+
+**I don't have anything right now.**
+
+3. Compare and contrast `rnorm()` and `MASS::mvrnorm()`. How could you make them more consistent?
+
+```{r}
+?rnorm
+?MASS::mvrnorm
+```
+
+**`rnorm` generates a random sample from the normal distribution, with parameters of `n` for sample size and `mean` and `sd` for the distribution. `mvrnorm` samples from the multivariate normal distribution, with parameters `n` for the number of samples required (default is 1) and vector `mu` for the means with a covariance matrix `Sigma` plus several other optional parameters. The presence/absence of a default sample size value and the SD vs covariance distinctions could cause confusion and might be made more consistent, but at the same time the options appear to be appropriate to each of the relevant procedures and distributions involved.**
+
+4. Make a case for why `norm_r()`, `norm_d()` etc would be better than `rnorm()`, `dnorm()`. Make a case for the opposite.
+
+**`norm_` as the prefix could make sense because you know which distribution you want to work with and can then bring up the list of functions to identify the task you want to perform using that distribution (random generation, density, etc.) On the other hand, beginning with the letter that identifies the task you want to perform, e.g., you know you need to generate a random sample so you type `r`, and then you're presented with a list of the available distributions to choose from - although frankly, a single letter will match a whole bunch of other functions and probably isn't going to be very helpful for autocompletion.**
