@@ -3,6 +3,11 @@ title: "Chapter 19: Functions"
 output: html_notebook
 ---
 
+```{r}
+library(lubridate)
+library(stringr)
+```
+
 # 19.2 When should you write a function?
 
 ## 19.2.1 Practice
@@ -153,3 +158,152 @@ f3(c(1:5), c("a", "b", "c"))
 4. Make a case for why `norm_r()`, `norm_d()` etc would be better than `rnorm()`, `dnorm()`. Make a case for the opposite.
 
 **`norm_` as the prefix could make sense because you know which distribution you want to work with and can then bring up the list of functions to identify the task you want to perform using that distribution (random generation, density, etc.) On the other hand, beginning with the letter that identifies the task you want to perform, e.g., you know you need to generate a random sample so you type `r`, and then you're presented with a list of the available distributions to choose from - although frankly, a single letter will match a whole bunch of other functions and probably isn't going to be very helpful for autocompletion.**
+
+# 19.4 Conditional execution
+
+## 19.4.4 Exercises
+
+1. What’s the difference between `if` and `ifelse()`? Carefully read the help and construct three examples that illustrate the key differences.
+
+```{r}
+?`if`
+?ifelse
+```
+
+**`if` tests a single condition and then allows blocks of code to be executed depending on whether that condition was or, in combination with `else`, wasn't satisfied. On the other hand, `ifelse` can take a set of inputs to test (e.g., a vector of numbers) and will return an equal-length set with each element assigned its value depending on whether the test condition was or wasn't satisfied But all it can do is return those values rather than execute a sequence of operations.**
+
+2. Write a greeting function that says “good morning”, “good afternoon”, or “good evening”, depending on the time of day. (Hint: use a time argument that defaults to `lubridate::now()`. That will make it easier to test your function.)
+
+```{r}
+say_gday <- function(time = now()) {
+  time_hour <- hour(time)
+  if (time_hour < 12) {
+    greeting <- "morning"
+  } else if (time_hour < 18) {
+    greeting <- "afternoon"
+  } else {
+    greeting <- "evening"
+  }
+  writeLines(str_c("good ", greeting))
+}
+say_gday()
+say_gday(dmy_hm("4/4/2017 09:30"))
+say_gday(dmy_hm("4/4/2017 09:30pm"))
+say_gday(dmy_hm("4/4/2017 16:20"))
+```
+
+3. Implement a `fizzbuzz` function. It takes a single number as input. If the number is divisible by three, it returns “fizz”. If it’s divisible by five it returns “buzz”. If it’s divisible by three and five, it returns “fizzbuzz”. Otherwise, it returns the number. Make sure you first write working code before you create the function.
+
+```{r}
+fizzbuzz <- function(x) {
+  if ((x %% 3 == 0) && (x %% 5 == 0)) {
+    return("fizzbuzz")
+  } else if (x %% 3 == 0) {
+    return("fizz")
+  } else if (x %% 5 == 0) {
+    return("buzz")
+  } else {
+    return(x)
+  }
+}
+fizzbuzz(15)
+fizzbuzz(9)
+fizzbuzz(10)
+fizzbuzz(8)
+```
+
+4. How could you use `cut()` to simplify this set of nested if-else statements?
+
+```{r}
+if (temp <= 0) {
+  "freezing"
+} else if (temp <= 10) {
+  "cold"
+} else if (temp <= 20) {
+  "cool"
+} else if (temp <= 30) {
+  "warm"
+} else {
+  "hot"
+}
+```
+
+```{r}
+temps <- c(-8, 24, 35, 16, 7, 10)
+cut(
+  temps,
+  breaks = c(-Inf, 0, 10, 20, 30, Inf),
+  labels = c("freezing", "cold", "cool", "warm", "hot")
+)
+```
+
+How would you change the call to `cut()` if I’d used `<` instead of `<=`? What is the other chief advantage of `cut()` for this problem? (Hint: what happens if you have many values in `temp`?)
+
+```{r}
+cut(
+  temps,
+  breaks = c(-Inf, 0, 10, 20, 30, Inf),
+  labels = c("freezing", "cold", "cool", "warm", "hot"),
+  right = FALSE # Makes the ranges closed on the left and open on the right
+)
+```
+
+**`cut()` can deal with a vector filled with `temps` rather than needing to invoke a function with the `if` and `else` statements for every `temp` value.**
+
+5. What happens if you use `switch()` with numeric values?
+
+```{r}
+switch(3, "duck(1)", "duck(2)", "goose") # option 3
+switch(7 %% 3, "duck(1)", "duck(2)", "goose") # option 1
+switch(7 / 3, "duck(1)", "duck(2)", "goose") # option 2
+```
+
+**It will choose the argument that corresponds in position to the number / numeric expression.**
+
+6. What does this `switch()` call do? What happens if `x` is “e”?
+
+```{r}
+switch(x, 
+  a = ,
+  b = "ab",
+  c = ,
+  d = "cd"
+)
+```
+
+Experiment, then carefully read the documentation.
+
+```{r}
+switch("e", 
+  a = ,
+  b = "ab",
+  c = ,
+  d = "cd"
+)
+switch("a", 
+  a = ,
+  b = "ab",
+  c = ,
+  d = "cd"
+)
+switch("b", 
+  a = ,
+  b = "ab",
+  c = ,
+  d = "cd"
+)
+switch("c", 
+  a = ,
+  b = "ab",
+  c = ,
+  d = "cd"
+)
+switch("d", 
+  a = ,
+  b = "ab",
+  c = ,
+  d = "cd"
+)
+```
+
+**The help explains that when the expression is a character string then the string is matched to the names of elements, and if there is a match then that element is evaluated - unless it is missing, in which case it goes on to evaluate the next non-missing element. This explains why "a" and "c" each flow down to display the subsequent element's string. Because `"e"` doesn't match any element names, nothing is evaluated.**
