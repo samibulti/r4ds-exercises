@@ -1,0 +1,53 @@
+---
+title: "Chapter 20: Vectors"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+```
+
+# 20.3 Important types of atomic vector
+
+## 20.3.5 Exercises
+
+1. Describe the difference between `is.finite(x)` and `!is.infinite(x)`.
+
+```{r}
+?is.finite
+```
+
+**`is.finite` will return a `FALSE` element for not only `Inf` and `-Inf` but also for `NA` and `NaN` as they aren't finite values. On the other hand, `is.infinite` only returns `TRUE` for `Inf` and `-Inf`, so `!is.infinite` will return `FALSE` for those values but ends up returning `TRUE` for `NA` and `NaN`.**
+
+```{r}
+is.finite(c(0, Inf, -Inf, NA, NaN))
+!is.infinite(c(0, Inf, -Inf, NA, NaN))
+```
+
+2. Read the source code for `dplyr::near()` (Hint: to see the source code, drop the `()`). How does it work?
+
+```{r}
+near
+```
+
+**It tests whether the absolute value of the difference between the two values is less than a tolerance threshold, which has a default value or can be overridden.**
+
+3. A logical vector can take 3 possible values. How many possible values can an integer vector take? How many possible values can a double take? Use google to do some research.
+
+```{r}
+.Machine$integer.max
+```
+
+**This is `2 ^ 31 - 1` and is the maximum integer value R can handle. Negative values can go to the same absolute value. So the total number of possible values is above 4.2 billion, and then there are the special values such as `NA`.**
+
+4. Brainstorm at least four functions that allow you to convert a double to an integer. How do they differ? Be precise.
+
+**There is an `as.integer()` function that will coerce values to be integers. The rounding functions (`round`, `floor`, etc.) appear to return doubles even though the value has been made a whole number.**
+
+5. What functions from the readr package allow you to turn a string into logical, integer, and double vector?
+
+```{r}
+?parse_logical
+```
+
+**The `parse_` functions take a character vector and parse them to other vector types.**
