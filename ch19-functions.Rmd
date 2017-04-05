@@ -307,3 +307,57 @@ switch("d",
 ```
 
 **The help explains that when the expression is a character string then the string is matched to the names of elements, and if there is a match then that element is evaluated - unless it is missing, in which case it goes on to evaluate the next non-missing element. This explains why "a" and "c" each flow down to display the subsequent element's string. Because `"e"` doesn't match any element names, nothing is evaluated.**
+
+# 19.5 Function arguments
+
+## 19.5.5 Exercises
+
+1. What does `commas(letters, collapse = "-")` do? Why?
+
+```{r}
+commas <- function(...) stringr::str_c(..., collapse = ", ")
+commas(letters, collapse = "-")
+```
+
+**Because a `collapse` argument has been passed to `commas()` as part of its `...`, it is then passed through to `str_c` remaining as part of the `...`, colliding with rather than overriding the default `collapse` value.**
+
+2. It’d be nice if you could supply multiple characters to the pad argument, e.g. `rule("Title", pad = "-+")`. Why doesn’t this currently work? How could you fix it?
+
+```{r}
+rule <- function(..., pad = "-") {
+  title <- paste0(...)
+  width <- getOption("width") - nchar(title) - 5
+  cat(title, " ", stringr::str_dup(pad, width), "\n", sep = "")
+}
+rule("Important output")
+rule("Title", pad = "-+")
+```
+
+**It doesn't work because the `pad` string is duplicated a number of times equal to the width that has been calculated, so if there are two characters it is twice as wide as needed.**
+
+```{r}
+rule2 <- function(..., pad = "-") {
+  title <- paste0(...)
+  width <- getOption("width") - nchar(title) - 5
+  cat(title, " ", stringr::str_dup(pad, width / nchar(pad)), "\n", sep = "")
+}
+rule2("Important output")
+rule2("Title", pad = "-+")
+```
+
+3. What does the `trim` argument to `mean()` do? When might you use it?
+
+```{r}
+?mean
+```
+
+**It specifies the proportion of cases at each end of the distribution that should be trimmed/dropped from the calculation. It would be useful if you have outliers that would have a strong effect on the mean and make it less representative of the central tendency in the observations, e.g., `trim = .025` would drop the most extreme values at each end and calculate the mean based on the remaining 95% of observations.**
+
+4. The default value for the method argument to `cor()` is `c("pearson", "kendall", "spearman")`. What does that mean? What value is used by default?
+
+```{r}
+?cor
+cor(1:10, 2:11, method = "wickham")
+```
+
+**By default it calculates the Pearson correlation. The vector specified as the default defines the acceptable values - if anything else is passed as an argument it will produce an error message.**
