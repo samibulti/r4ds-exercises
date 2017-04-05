@@ -268,11 +268,137 @@ lag():    dplyr, stats</code></pre>
 <!-- rnb-chunk-end -->
 <!-- rnb-text-begin -->
 <p><strong>The <code>parse_</code> functions take a character vector and parse them to other vector types.</strong></p>
+</div>
+</div>
+<div id="using-atomic-vectors" class="section level1">
+<h1>20.4 Using atomic vectors</h1>
+<div id="exercises-1" class="section level2">
+<h2>20.4.6 Exercises</h2>
+<ol style="list-style-type: decimal">
+<li>What does <code>mean(is.na(x))</code> tell you about a vector <code>x</code>? What about <code>sum(!is.finite(x)</code>)?</li>
+</ol>
+<p><strong><code>mean(is.na(x))</code> tells you the proportion of elements in the vector that are missing values. <code>sum(!is.finite(x))</code> tells you how many of the elements in the vector aren’t finite values.</strong></p>
+<ol start="2" style="list-style-type: decimal">
+<li>Carefully read the documentation of <code>is.vector()</code>. What does it actually test for? Why does <code>is.atomic()</code> not agree with the definition of atomic vectors above?</li>
+</ol>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuP2lzLnZlY3RvclxuP2lzLmF0b21pY1xuYGBgIn0= -->
+<pre class="r"><code>?is.vector
+?is.atomic</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p><strong><code>is.vector()</code> tests whether <code>x</code> is a vector of the specified mode (default is “any”) that has no attributes other than names. <code>is.atomic()</code> returns <code>TRUE</code> not only if <code>x</code> is of an atomic type, but also for <code>NULL</code>.</strong></p>
+<ol start="3" style="list-style-type: decimal">
+<li>Compare and contrast <code>setNames()</code> with <code>purrr::set_names()</code>.</li>
+</ol>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuP3NldE5hbWVzXG4/cHVycnI6OnNldF9uYW1lc1xuYGBgIn0= -->
+<pre class="r"><code>?setNames
+?purrr::set_names</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p><strong><code>set_names</code> adjusts the defaults so that if a vector is passed in without a second argument, the vector will be named with itself. As a tidyverse function it will also include checks to prevent silent recycling.</strong></p>
+<ol start="4" style="list-style-type: decimal">
+<li><p>Create functions that take a vector as input and returns:</p></li>
+<li>The last value. Should you use <code>[</code> or <code>[[</code>?</li>
+<li>The elements at even numbered positions.</li>
+<li>Every element except the last value.</li>
+<li><p>Only even numbers (and no missing values).</p></li>
+</ol>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZ2V0X2xhc3QgPC0gZnVuY3Rpb24oeCkge1xuICB4W1tsZW5ndGgoeCldXSAjIHVzZSBbWyBiZWNhdXNlIHdlIHdhbnQganVzdCB0aGUgc2luZ2xlIHZhbHVlXG59XG5nZXRfZXZlbl9wb3MgPC0gZnVuY3Rpb24oeCkge1xuICB4W2MoRkFMU0UsIFRSVUUpXSAjIFRoZSB0d28gZWxlbWVudHMgd2lsbCBiZSByZWN5Y2xlZCB0byB0aGUgZnVsbCBsZW5ndGggb2YgeFxufVxuZHJvcF9sYXN0IDwtIGZ1bmN0aW9uKHgpIHtcbiAgeFstbGVuZ3RoKHgpXVxufVxuZ2V0X2V2ZW5fdmFsIDwtIGZ1bmN0aW9uKHgpIHtcbiAgeFshaXMubmEoeCkgJiB4ICUlIDIgPT0gMF1cbn1cbnRlc3QgPC0gYyhOQSwgMDo1LCBOQSwgNjoxMClcbmdldF9sYXN0KHRlc3QpXG5gYGAifQ== -->
+<pre class="r"><code>get_last &lt;- function(x) {
+  x[[length(x)]] # use [[ because we want just the single value
+}
+get_even_pos &lt;- function(x) {
+  x[c(FALSE, TRUE)] # The two elements will be recycled to the full length of x
+}
+drop_last &lt;- function(x) {
+  x[-length(x)]
+}
+get_even_val &lt;- function(x) {
+  x[!is.na(x) &amp; x %% 2 == 0]
+}
+test &lt;- c(NA, 0:5, NA, 6:10)
+get_last(test)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIDEwXG4ifQ== -->
+<pre><code>[1] 10</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZ2V0X2V2ZW5fcG9zKHRlc3QpXG5gYGAifQ== -->
+<pre class="r"><code>get_even_pos(test)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdICAwICAyICA0IE5BICA3ICA5XG4ifQ== -->
+<pre><code>[1]  0  2  4 NA  7  9</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZHJvcF9sYXN0KHRlc3QpXG5gYGAifQ== -->
+<pre class="r"><code>drop_last(test)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiIFsxXSBOQSAgMCAgMSAgMiAgMyAgNCAgNSBOQSAgNiAgNyAgOCAgOVxuIn0= -->
+<pre><code> [1] NA  0  1  2  3  4  5 NA  6  7  8  9</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxuZ2V0X2V2ZW5fdmFsKHRlc3QpXG5gYGAifQ== -->
+<pre class="r"><code>get_even_val(test)</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdICAwICAyICA0ICA2ICA4IDEwXG4ifQ== -->
+<pre><code>[1]  0  2  4  6  8 10</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<ol start="5" style="list-style-type: decimal">
+<li>Why is <code>x[-which(x &gt; 0)]</code> not the same as <code>x[x &lt;= 0]</code>?</li>
+</ol>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxudGVzdDIgPC0gYygtMTAsIDgsIE5BLCAwKVxudGVzdDJbLXdoaWNoKHRlc3QyID4gMCldXG5gYGAifQ== -->
+<pre class="r"><code>test2 &lt;- c(-10, 8, NA, 0)
+test2[-which(test2 &gt; 0)]</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIC0xMCAgTkEgICAwXG4ifQ== -->
+<pre><code>[1] -10  NA   0</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxudGVzdDJbdGVzdDIgPD0gMF1cbmBgYCJ9 -->
+<pre class="r"><code>test2[test2 &lt;= 0]</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiWzFdIC0xMCAgTkEgICAwXG4ifQ== -->
+<pre><code>[1] -10  NA   0</code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p><strong>I’ll leave this for now.</strong></p>
+<ol start="6" style="list-style-type: decimal">
+<li>What happens when you subset with a positive integer that’s bigger than the length of the vector? What happens when you subset with a name that doesn’t exist?</li>
+</ol>
+<!-- rnb-text-end -->
+<!-- rnb-chunk-begin -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxudGVzdDMgPC0gYyhhID0gMSwgYiA9IDIsIGMgPSAzKVxudGVzdDNbMjo0XVxuYGBgIn0= -->
+<pre class="r"><code>test3 &lt;- c(a = 1, b = 2, c = 3)
+test3[2:4]</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiICAgYiAgICBjIDxOQT4gXG4gICAyICAgIDMgICBOQSBcbiJ9 -->
+<pre><code>   b    c &lt;NA&gt; 
+   2    3   NA </code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-source-begin eyJkYXRhIjoiYGBgclxudGVzdDNbYyhcImNcIiwgXCJkXCIpXVxuYGBgIn0= -->
+<pre class="r"><code>test3[c(&quot;c&quot;, &quot;d&quot;)]</code></pre>
+<!-- rnb-source-end -->
+<!-- rnb-output-begin eyJkYXRhIjoiICAgYyA8TkE+IFxuICAgMyAgIE5BIFxuIn0= -->
+<pre><code>   c &lt;NA&gt; 
+   3   NA </code></pre>
+<!-- rnb-output-end -->
+<!-- rnb-chunk-end -->
+<!-- rnb-text-begin -->
+<p><strong>Subsetting with too large a number returns <code>NA</code> for any elements that are beyond the length of the original vector. Using a name that doesn’t exist will also return an <code>NA</code>.</strong></p>
 <!-- rnb-text-end -->
 </div>
 </div>
 
-<div id="rmd-source-code">LS0tCnRpdGxlOiAiQ2hhcHRlciAyMDogVmVjdG9ycyIKb3V0cHV0OiBodG1sX25vdGVib29rCi0tLQoKYGBge3J9CmxpYnJhcnkodGlkeXZlcnNlKQpgYGAKCiMgMjAuMyBJbXBvcnRhbnQgdHlwZXMgb2YgYXRvbWljIHZlY3RvcgoKIyMgMjAuMy41IEV4ZXJjaXNlcwoKMS4gRGVzY3JpYmUgdGhlIGRpZmZlcmVuY2UgYmV0d2VlbiBgaXMuZmluaXRlKHgpYCBhbmQgYCFpcy5pbmZpbml0ZSh4KWAuCgpgYGB7cn0KP2lzLmZpbml0ZQpgYGAKCioqYGlzLmZpbml0ZWAgd2lsbCByZXR1cm4gYSBgRkFMU0VgIGVsZW1lbnQgZm9yIG5vdCBvbmx5IGBJbmZgIGFuZCBgLUluZmAgYnV0IGFsc28gZm9yIGBOQWAgYW5kIGBOYU5gIGFzIHRoZXkgYXJlbid0IGZpbml0ZSB2YWx1ZXMuIE9uIHRoZSBvdGhlciBoYW5kLCBgaXMuaW5maW5pdGVgIG9ubHkgcmV0dXJucyBgVFJVRWAgZm9yIGBJbmZgIGFuZCBgLUluZmAsIHNvIGAhaXMuaW5maW5pdGVgIHdpbGwgcmV0dXJuIGBGQUxTRWAgZm9yIHRob3NlIHZhbHVlcyBidXQgZW5kcyB1cCByZXR1cm5pbmcgYFRSVUVgIGZvciBgTkFgIGFuZCBgTmFOYC4qKgoKYGBge3J9CmlzLmZpbml0ZShjKDAsIEluZiwgLUluZiwgTkEsIE5hTikpCiFpcy5pbmZpbml0ZShjKDAsIEluZiwgLUluZiwgTkEsIE5hTikpCmBgYAoKMi4gUmVhZCB0aGUgc291cmNlIGNvZGUgZm9yIGBkcGx5cjo6bmVhcigpYCAoSGludDogdG8gc2VlIHRoZSBzb3VyY2UgY29kZSwgZHJvcCB0aGUgYCgpYCkuIEhvdyBkb2VzIGl0IHdvcms/CgpgYGB7cn0KbmVhcgpgYGAKCioqSXQgdGVzdHMgd2hldGhlciB0aGUgYWJzb2x1dGUgdmFsdWUgb2YgdGhlIGRpZmZlcmVuY2UgYmV0d2VlbiB0aGUgdHdvIHZhbHVlcyBpcyBsZXNzIHRoYW4gYSB0b2xlcmFuY2UgdGhyZXNob2xkLCB3aGljaCBoYXMgYSBkZWZhdWx0IHZhbHVlIG9yIGNhbiBiZSBvdmVycmlkZGVuLioqCgozLiBBIGxvZ2ljYWwgdmVjdG9yIGNhbiB0YWtlIDMgcG9zc2libGUgdmFsdWVzLiBIb3cgbWFueSBwb3NzaWJsZSB2YWx1ZXMgY2FuIGFuIGludGVnZXIgdmVjdG9yIHRha2U/IEhvdyBtYW55IHBvc3NpYmxlIHZhbHVlcyBjYW4gYSBkb3VibGUgdGFrZT8gVXNlIGdvb2dsZSB0byBkbyBzb21lIHJlc2VhcmNoLgoKYGBge3J9Ci5NYWNoaW5lJGludGVnZXIubWF4CmBgYAoKKipUaGlzIGlzIGAyIF4gMzEgLSAxYCBhbmQgaXMgdGhlIG1heGltdW0gaW50ZWdlciB2YWx1ZSBSIGNhbiBoYW5kbGUuIE5lZ2F0aXZlIHZhbHVlcyBjYW4gZ28gdG8gdGhlIHNhbWUgYWJzb2x1dGUgdmFsdWUuIFNvIHRoZSB0b3RhbCBudW1iZXIgb2YgcG9zc2libGUgdmFsdWVzIGlzIGFib3ZlIDQuMiBiaWxsaW9uLCBhbmQgdGhlbiB0aGVyZSBhcmUgdGhlIHNwZWNpYWwgdmFsdWVzIHN1Y2ggYXMgYE5BYC4qKgoKNC4gQnJhaW5zdG9ybSBhdCBsZWFzdCBmb3VyIGZ1bmN0aW9ucyB0aGF0IGFsbG93IHlvdSB0byBjb252ZXJ0IGEgZG91YmxlIHRvIGFuIGludGVnZXIuIEhvdyBkbyB0aGV5IGRpZmZlcj8gQmUgcHJlY2lzZS4KCioqVGhlcmUgaXMgYW4gYGFzLmludGVnZXIoKWAgZnVuY3Rpb24gdGhhdCB3aWxsIGNvZXJjZSB2YWx1ZXMgdG8gYmUgaW50ZWdlcnMuIFRoZSByb3VuZGluZyBmdW5jdGlvbnMgKGByb3VuZGAsIGBmbG9vcmAsIGV0Yy4pIGFwcGVhciB0byByZXR1cm4gZG91YmxlcyBldmVuIHRob3VnaCB0aGUgdmFsdWUgaGFzIGJlZW4gbWFkZSBhIHdob2xlIG51bWJlci4qKgoKNS4gV2hhdCBmdW5jdGlvbnMgZnJvbSB0aGUgcmVhZHIgcGFja2FnZSBhbGxvdyB5b3UgdG8gdHVybiBhIHN0cmluZyBpbnRvIGxvZ2ljYWwsIGludGVnZXIsIGFuZCBkb3VibGUgdmVjdG9yPwoKYGBge3J9Cj9wYXJzZV9sb2dpY2FsCmBgYAoKKipUaGUgYHBhcnNlX2AgZnVuY3Rpb25zIHRha2UgYSBjaGFyYWN0ZXIgdmVjdG9yIGFuZCBwYXJzZSB0aGVtIHRvIG90aGVyIHZlY3RvciB0eXBlcy4qKgo=</div>
+<div id="rmd-source-code">LS0tCnRpdGxlOiAiQ2hhcHRlciAyMDogVmVjdG9ycyIKb3V0cHV0OiBodG1sX25vdGVib29rCi0tLQoKYGBge3J9CmxpYnJhcnkodGlkeXZlcnNlKQpgYGAKCiMgMjAuMyBJbXBvcnRhbnQgdHlwZXMgb2YgYXRvbWljIHZlY3RvcgoKIyMgMjAuMy41IEV4ZXJjaXNlcwoKMS4gRGVzY3JpYmUgdGhlIGRpZmZlcmVuY2UgYmV0d2VlbiBgaXMuZmluaXRlKHgpYCBhbmQgYCFpcy5pbmZpbml0ZSh4KWAuCgpgYGB7cn0KP2lzLmZpbml0ZQpgYGAKCioqYGlzLmZpbml0ZWAgd2lsbCByZXR1cm4gYSBgRkFMU0VgIGVsZW1lbnQgZm9yIG5vdCBvbmx5IGBJbmZgIGFuZCBgLUluZmAgYnV0IGFsc28gZm9yIGBOQWAgYW5kIGBOYU5gIGFzIHRoZXkgYXJlbid0IGZpbml0ZSB2YWx1ZXMuIE9uIHRoZSBvdGhlciBoYW5kLCBgaXMuaW5maW5pdGVgIG9ubHkgcmV0dXJucyBgVFJVRWAgZm9yIGBJbmZgIGFuZCBgLUluZmAsIHNvIGAhaXMuaW5maW5pdGVgIHdpbGwgcmV0dXJuIGBGQUxTRWAgZm9yIHRob3NlIHZhbHVlcyBidXQgZW5kcyB1cCByZXR1cm5pbmcgYFRSVUVgIGZvciBgTkFgIGFuZCBgTmFOYC4qKgoKYGBge3J9CmlzLmZpbml0ZShjKDAsIEluZiwgLUluZiwgTkEsIE5hTikpCiFpcy5pbmZpbml0ZShjKDAsIEluZiwgLUluZiwgTkEsIE5hTikpCmBgYAoKMi4gUmVhZCB0aGUgc291cmNlIGNvZGUgZm9yIGBkcGx5cjo6bmVhcigpYCAoSGludDogdG8gc2VlIHRoZSBzb3VyY2UgY29kZSwgZHJvcCB0aGUgYCgpYCkuIEhvdyBkb2VzIGl0IHdvcms/CgpgYGB7cn0KbmVhcgpgYGAKCioqSXQgdGVzdHMgd2hldGhlciB0aGUgYWJzb2x1dGUgdmFsdWUgb2YgdGhlIGRpZmZlcmVuY2UgYmV0d2VlbiB0aGUgdHdvIHZhbHVlcyBpcyBsZXNzIHRoYW4gYSB0b2xlcmFuY2UgdGhyZXNob2xkLCB3aGljaCBoYXMgYSBkZWZhdWx0IHZhbHVlIG9yIGNhbiBiZSBvdmVycmlkZGVuLioqCgozLiBBIGxvZ2ljYWwgdmVjdG9yIGNhbiB0YWtlIDMgcG9zc2libGUgdmFsdWVzLiBIb3cgbWFueSBwb3NzaWJsZSB2YWx1ZXMgY2FuIGFuIGludGVnZXIgdmVjdG9yIHRha2U/IEhvdyBtYW55IHBvc3NpYmxlIHZhbHVlcyBjYW4gYSBkb3VibGUgdGFrZT8gVXNlIGdvb2dsZSB0byBkbyBzb21lIHJlc2VhcmNoLgoKYGBge3J9Ci5NYWNoaW5lJGludGVnZXIubWF4CmBgYAoKKipUaGlzIGlzIGAyIF4gMzEgLSAxYCBhbmQgaXMgdGhlIG1heGltdW0gaW50ZWdlciB2YWx1ZSBSIGNhbiBoYW5kbGUuIE5lZ2F0aXZlIHZhbHVlcyBjYW4gZ28gdG8gdGhlIHNhbWUgYWJzb2x1dGUgdmFsdWUuIFNvIHRoZSB0b3RhbCBudW1iZXIgb2YgcG9zc2libGUgdmFsdWVzIGlzIGFib3ZlIDQuMiBiaWxsaW9uLCBhbmQgdGhlbiB0aGVyZSBhcmUgdGhlIHNwZWNpYWwgdmFsdWVzIHN1Y2ggYXMgYE5BYC4qKgoKNC4gQnJhaW5zdG9ybSBhdCBsZWFzdCBmb3VyIGZ1bmN0aW9ucyB0aGF0IGFsbG93IHlvdSB0byBjb252ZXJ0IGEgZG91YmxlIHRvIGFuIGludGVnZXIuIEhvdyBkbyB0aGV5IGRpZmZlcj8gQmUgcHJlY2lzZS4KCioqVGhlcmUgaXMgYW4gYGFzLmludGVnZXIoKWAgZnVuY3Rpb24gdGhhdCB3aWxsIGNvZXJjZSB2YWx1ZXMgdG8gYmUgaW50ZWdlcnMuIFRoZSByb3VuZGluZyBmdW5jdGlvbnMgKGByb3VuZGAsIGBmbG9vcmAsIGV0Yy4pIGFwcGVhciB0byByZXR1cm4gZG91YmxlcyBldmVuIHRob3VnaCB0aGUgdmFsdWUgaGFzIGJlZW4gbWFkZSBhIHdob2xlIG51bWJlci4qKgoKNS4gV2hhdCBmdW5jdGlvbnMgZnJvbSB0aGUgcmVhZHIgcGFja2FnZSBhbGxvdyB5b3UgdG8gdHVybiBhIHN0cmluZyBpbnRvIGxvZ2ljYWwsIGludGVnZXIsIGFuZCBkb3VibGUgdmVjdG9yPwoKYGBge3J9Cj9wYXJzZV9sb2dpY2FsCmBgYAoKKipUaGUgYHBhcnNlX2AgZnVuY3Rpb25zIHRha2UgYSBjaGFyYWN0ZXIgdmVjdG9yIGFuZCBwYXJzZSB0aGVtIHRvIG90aGVyIHZlY3RvciB0eXBlcy4qKgoKIyAyMC40IFVzaW5nIGF0b21pYyB2ZWN0b3JzCgojIyAyMC40LjYgRXhlcmNpc2VzCgoxLiBXaGF0IGRvZXMgYG1lYW4oaXMubmEoeCkpYCB0ZWxsIHlvdSBhYm91dCBhIHZlY3RvciBgeGA/IFdoYXQgYWJvdXQgYHN1bSghaXMuZmluaXRlKHgpYCk/CgoqKmBtZWFuKGlzLm5hKHgpKWAgdGVsbHMgeW91IHRoZSBwcm9wb3J0aW9uIG9mIGVsZW1lbnRzIGluIHRoZSB2ZWN0b3IgdGhhdCBhcmUgbWlzc2luZyB2YWx1ZXMuIGBzdW0oIWlzLmZpbml0ZSh4KSlgIHRlbGxzIHlvdSBob3cgbWFueSBvZiB0aGUgZWxlbWVudHMgaW4gdGhlIHZlY3RvciBhcmVuJ3QgZmluaXRlIHZhbHVlcy4qKgoKMi4gQ2FyZWZ1bGx5IHJlYWQgdGhlIGRvY3VtZW50YXRpb24gb2YgYGlzLnZlY3RvcigpYC4gV2hhdCBkb2VzIGl0IGFjdHVhbGx5IHRlc3QgZm9yPyBXaHkgZG9lcyBgaXMuYXRvbWljKClgIG5vdCBhZ3JlZSB3aXRoIHRoZSBkZWZpbml0aW9uIG9mIGF0b21pYyB2ZWN0b3JzIGFib3ZlPwoKYGBge3J9Cj9pcy52ZWN0b3IKP2lzLmF0b21pYwpgYGAKCioqYGlzLnZlY3RvcigpYCB0ZXN0cyB3aGV0aGVyIGB4YCBpcyBhIHZlY3RvciBvZiB0aGUgc3BlY2lmaWVkIG1vZGUgKGRlZmF1bHQgaXMgImFueSIpIHRoYXQgaGFzIG5vIGF0dHJpYnV0ZXMgb3RoZXIgdGhhbiBuYW1lcy4gYGlzLmF0b21pYygpYCByZXR1cm5zIGBUUlVFYCBub3Qgb25seSBpZiBgeGAgaXMgb2YgYW4gYXRvbWljIHR5cGUsIGJ1dCBhbHNvIGZvciBgTlVMTGAuKioKCjMuIENvbXBhcmUgYW5kIGNvbnRyYXN0IGBzZXROYW1lcygpYCB3aXRoIGBwdXJycjo6c2V0X25hbWVzKClgLgoKYGBge3J9Cj9zZXROYW1lcwo/cHVycnI6OnNldF9uYW1lcwpgYGAKCioqYHNldF9uYW1lc2AgYWRqdXN0cyB0aGUgZGVmYXVsdHMgc28gdGhhdCBpZiBhIHZlY3RvciBpcyBwYXNzZWQgaW4gd2l0aG91dCBhIHNlY29uZCBhcmd1bWVudCwgdGhlIHZlY3RvciB3aWxsIGJlIG5hbWVkIHdpdGggaXRzZWxmLiBBcyBhIHRpZHl2ZXJzZSBmdW5jdGlvbiBpdCB3aWxsIGFsc28gaW5jbHVkZSBjaGVja3MgdG8gcHJldmVudCBzaWxlbnQgcmVjeWNsaW5nLioqCgo0LiBDcmVhdGUgZnVuY3Rpb25zIHRoYXQgdGFrZSBhIHZlY3RvciBhcyBpbnB1dCBhbmQgcmV0dXJuczoKCiAgMS4gVGhlIGxhc3QgdmFsdWUuIFNob3VsZCB5b3UgdXNlIGBbYCBvciBgW1tgPwogIDIuIFRoZSBlbGVtZW50cyBhdCBldmVuIG51bWJlcmVkIHBvc2l0aW9ucy4KICAzLiBFdmVyeSBlbGVtZW50IGV4Y2VwdCB0aGUgbGFzdCB2YWx1ZS4KICA0LiBPbmx5IGV2ZW4gbnVtYmVycyAoYW5kIG5vIG1pc3NpbmcgdmFsdWVzKS4KCmBgYHtyfQpnZXRfbGFzdCA8LSBmdW5jdGlvbih4KSB7CiAgeFtbbGVuZ3RoKHgpXV0gIyB1c2UgW1sgYmVjYXVzZSB3ZSB3YW50IGp1c3QgdGhlIHNpbmdsZSB2YWx1ZQp9CgpnZXRfZXZlbl9wb3MgPC0gZnVuY3Rpb24oeCkgewogIHhbYyhGQUxTRSwgVFJVRSldICMgVGhlIHR3byBlbGVtZW50cyB3aWxsIGJlIHJlY3ljbGVkIHRvIHRoZSBmdWxsIGxlbmd0aCBvZiB4Cn0KCmRyb3BfbGFzdCA8LSBmdW5jdGlvbih4KSB7CiAgeFstbGVuZ3RoKHgpXQp9CgpnZXRfZXZlbl92YWwgPC0gZnVuY3Rpb24oeCkgewogIHhbIWlzLm5hKHgpICYgeCAlJSAyID09IDBdCn0KCnRlc3QgPC0gYyhOQSwgMDo1LCBOQSwgNjoxMCkKZ2V0X2xhc3QodGVzdCkKZ2V0X2V2ZW5fcG9zKHRlc3QpCmRyb3BfbGFzdCh0ZXN0KQpnZXRfZXZlbl92YWwodGVzdCkKYGBgCgo1LiBXaHkgaXMgYHhbLXdoaWNoKHggPiAwKV1gIG5vdCB0aGUgc2FtZSBhcyBgeFt4IDw9IDBdYD8KCmBgYHtyfQp0ZXN0MiA8LSBjKC0xMCwgOCwgTkEsIDApCnRlc3QyWy13aGljaCh0ZXN0MiA+IDApXQp0ZXN0Mlt0ZXN0MiA8PSAwXQpgYGAKCioqSSdsbCBsZWF2ZSB0aGlzIGZvciBub3cuKioKCjYuIFdoYXQgaGFwcGVucyB3aGVuIHlvdSBzdWJzZXQgd2l0aCBhIHBvc2l0aXZlIGludGVnZXIgdGhhdOKAmXMgYmlnZ2VyIHRoYW4gdGhlIGxlbmd0aCBvZiB0aGUgdmVjdG9yPyBXaGF0IGhhcHBlbnMgd2hlbiB5b3Ugc3Vic2V0IHdpdGggYSBuYW1lIHRoYXQgZG9lc27igJl0IGV4aXN0PwoKYGBge3J9CnRlc3QzIDwtIGMoYSA9IDEsIGIgPSAyLCBjID0gMykKdGVzdDNbMjo0XQp0ZXN0M1tjKCJjIiwgImQiKV0KYGBgCgoqKlN1YnNldHRpbmcgd2l0aCB0b28gbGFyZ2UgYSBudW1iZXIgcmV0dXJucyBgTkFgIGZvciBhbnkgZWxlbWVudHMgdGhhdCBhcmUgYmV5b25kIHRoZSBsZW5ndGggb2YgdGhlIG9yaWdpbmFsIHZlY3Rvci4gVXNpbmcgYSBuYW1lIHRoYXQgZG9lc24ndCBleGlzdCB3aWxsIGFsc28gcmV0dXJuIGFuIGBOQWAuKioK</div>
 
 
 

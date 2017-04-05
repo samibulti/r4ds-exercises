@@ -51,3 +51,80 @@ near
 ```
 
 **The `parse_` functions take a character vector and parse them to other vector types.**
+
+# 20.4 Using atomic vectors
+
+## 20.4.6 Exercises
+
+1. What does `mean(is.na(x))` tell you about a vector `x`? What about `sum(!is.finite(x)`)?
+
+**`mean(is.na(x))` tells you the proportion of elements in the vector that are missing values. `sum(!is.finite(x))` tells you how many of the elements in the vector aren't finite values.**
+
+2. Carefully read the documentation of `is.vector()`. What does it actually test for? Why does `is.atomic()` not agree with the definition of atomic vectors above?
+
+```{r}
+?is.vector
+?is.atomic
+```
+
+**`is.vector()` tests whether `x` is a vector of the specified mode (default is "any") that has no attributes other than names. `is.atomic()` returns `TRUE` not only if `x` is of an atomic type, but also for `NULL`.**
+
+3. Compare and contrast `setNames()` with `purrr::set_names()`.
+
+```{r}
+?setNames
+?purrr::set_names
+```
+
+**`set_names` adjusts the defaults so that if a vector is passed in without a second argument, the vector will be named with itself. As a tidyverse function it will also include checks to prevent silent recycling.**
+
+4. Create functions that take a vector as input and returns:
+
+  1. The last value. Should you use `[` or `[[`?
+  2. The elements at even numbered positions.
+  3. Every element except the last value.
+  4. Only even numbers (and no missing values).
+
+```{r}
+get_last <- function(x) {
+  x[[length(x)]] # use [[ because we want just the single value
+}
+
+get_even_pos <- function(x) {
+  x[c(FALSE, TRUE)] # The two elements will be recycled to the full length of x
+}
+
+drop_last <- function(x) {
+  x[-length(x)]
+}
+
+get_even_val <- function(x) {
+  x[!is.na(x) & x %% 2 == 0]
+}
+
+test <- c(NA, 0:5, NA, 6:10)
+get_last(test)
+get_even_pos(test)
+drop_last(test)
+get_even_val(test)
+```
+
+5. Why is `x[-which(x > 0)]` not the same as `x[x <= 0]`?
+
+```{r}
+test2 <- c(-10, 8, NA, 0)
+test2[-which(test2 > 0)]
+test2[test2 <= 0]
+```
+
+**I'll leave this for now.**
+
+6. What happens when you subset with a positive integer that’s bigger than the length of the vector? What happens when you subset with a name that doesn’t exist?
+
+```{r}
+test3 <- c(a = 1, b = 2, c = 3)
+test3[2:4]
+test3[c("c", "d")]
+```
+
+**Subsetting with too large a number returns `NA` for any elements that are beyond the length of the original vector. Using a name that doesn't exist will also return an `NA`.**
