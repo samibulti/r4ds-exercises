@@ -125,6 +125,8 @@ How does this affect performance? Design and execute an experiment.
 ```{r}
 library(microbenchmark)
 
+input <- rnorm(100)
+
 no_prealloc <- function(y) {
   output <- vector("integer", 0)
   for (i in seq_along(y)) {
@@ -141,8 +143,6 @@ prealloc <- function(y) {
   output
 }
 
-input <- rnorm(100)
-
 microbenchmark(
   no_prealloc(input),
   prealloc(input),
@@ -151,3 +151,33 @@ microbenchmark(
 ```
 
 **I'm consistently getting results where the preallocated function tends to be slower on average. They're identical functions except for the vector allocation, so I can't see a clear explanation and don't have another computer to test with at the moment.**
+
+```{r}
+input2 <- runif(5000)
+
+alt_no_pre <- function(x) {
+  out <- vector("numeric", 0)
+  out[1] <- x[1]
+  for (i in 2:length(x)) {
+    out[i] <- out[i - 1] + x[i]
+  }
+  out
+}
+
+alt_pre <- function(x) {
+  out <- vector("numeric", length(x))
+  out[1] <- x[1]
+  for (i in 2:length(x)) {
+    out[i] <- out[i - 1] + x[i]
+  }
+  out
+}
+
+microbenchmark(
+  alt_no_pre(input2),
+  alt_pre(input2)
+)
+
+```
+
+**I did some more testing with this second pair of functions. It seems that the size of the vector being created through the for loop (ie, number of iterations) has a big effect - at 5000 the mean time without preallocation is 10x that with preallocation, but at 1000 it was 2x. But changing the number of iterations involved didn't seem to produce the same sort of outcome. I'm still a bit confused.**
