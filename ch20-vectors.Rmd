@@ -128,3 +128,76 @@ test3[c("c", "d")]
 ```
 
 **Subsetting with too large a number returns `NA` for any elements that are beyond the length of the original vector. Using a name that doesn't exist will also return an `NA`.**
+
+# 20.5 Recursive vectors (lists)
+
+## 20.5.4 Exercises
+
+1. Draw the following lists as nested sets:
+
+  1. list(a, b, list(c, d), list(e, f))
+  
+  ![I haven't fiddled with the shading, etc.](ch20-5-4-ex1-1.png)
+  
+  2. list(list(list(list(list(list(a))))))
+  
+  **I'm not spending time on this one at this stage.**
+
+2. What happens if you subset a tibble as if you’re subsetting a list? What are the key differences between a list and a tibble?
+
+```{r}
+tib <- tibble(
+  x = c("a", "b", "c"),
+  y = c("d", "e", "f"),
+  z = c(1:3)
+)
+tib["x"]
+tib[1]
+tib[c("x", "y")]
+tib[["x"]]
+str(tib["x"])
+str(tib[["x"]])
+```
+
+**The general operations appear to be pretty much the same - just as single `[]` subsetting of a list produces a list, doing it with a tibble returns another tibble. `[[]]` returns a vector.**
+
+# 20.7 Augmented vectors
+
+## 20.7.4 Exercises
+
+1. What does `hms::hms(3600)` return? How does it print? What primitive type is the augmented vector built on top of? What attributes does it use?
+
+```{r}
+aug1 <- hms::hms(3600)
+aug1
+typeof(aug1)
+attributes(aug1)
+```
+
+**It prints as a time in hours, minutes and seconds (separated by colons). The primitive type is a double (floating point number). Its attributes are units (value is in seconds) and class (hms and difftime).**
+
+2. Try and make a tibble that has columns with different lengths. What happens?
+
+```{r}
+aug2 <- tibble(
+  x <- c("a", "b", "c"),
+  y <- c(1:5)
+)
+```
+
+**It throws an error because columns must be of equal size in a tibble. As explained earlier in this chaper, the tidyverse avoids silently recycling and the only exception allowed would be to provide a single value which would be put into all rows for that column.**
+
+3. Based on the definition above, is it ok to have a list as a column of a tibble?
+
+**The only constraint in the definition that makes a tibble differ from a list is that the elements must all be vectors of the same length. But if the column that is a list has the same number of elements as the other columns then it appears that it should work. We can test it.**
+
+```{r}
+aug3 <- tibble(
+  x = c(1:4),
+  y = c("a", "b", "c", "d"),
+  z = list("a", 1L, 1.5, c(TRUE, FALSE))
+)
+aug3
+```
+
+**This works and allows different types, would allow nested lists, etc.**
