@@ -67,3 +67,62 @@ model1 <- function(a, data) {
 ```
 
 **In this case two parameters, `a[1]` and `a[3]` both contribute to the intercept. The numerical method would presumably optimise one of these parameters while holding the other fixed, but there is no way to differentiate between those estimates and any other combination of those two parameters that sum to the same value.**
+
+# 23.3 Visualising models
+
+## 23.3.3 Exercises
+
+1. Instead of using `lm()` to fit a straight line, you can use `loess()` to fit a smooth curve. Repeat the process of model fitting, grid generation, predictions, and visualisation on `sim1` using `loess()` instead of `lm()`. How does the result compare to `geom_smooth()`?
+
+```{r}
+sim1_mod_loess <- loess(y ~ x, data = sim1)
+grid_loess <- sim1 %>%
+  data_grid(x) %>%
+  add_predictions(sim1_mod_loess)
+ggplot(sim1, aes(x = x)) +
+  geom_point(aes(y = y)) +
+  geom_line(data = grid_loess, aes(y = pred), colour = "red", size = 1)
+```
+
+```{r}
+sim1 %>%
+  ggplot(aes(x = x, y = y)) +
+    geom_point() +
+    geom_smooth(colour = "red", size = 1)
+```
+
+**It produces the same line (note that `geom_smooth()` uses loess as its default method).**
+
+2. `add_predictions()` is paired with `gather_predictions()` and `spread_predictions()`. How do these three functions differ?
+
+```{r}
+?add_predictions
+```
+
+**`add_predictions()` takes only a single model and adds its predictions as a new column.  `spread_predictions()` and `gather_predictions()` both take multiple models - `spread_predictions()` will put the predictions of each model in its pwn column, whereas `gather_predictions()` will replicate the rows and add columns labelled `.model` and `.pred` so it can add the predictions from each model into the same columns.**
+
+3. What does `geom_ref_line()` do? What package does it come from? Why is displaying a reference line in plots showing residuals useful and important?
+
+```{r}
+?geom_ref_line
+```
+
+**It's from `modelr` and it adds a reference line, i.e., a horizontal or vertical line, to a `ggplot2` plot. I can see two ways you might use reference lines. First, because the distance of residuals from zero is the indicator of how much the predictions are off the mark, you could have a horizontal reference line at zero. Second, if you have an idea of acceptable/unacceptable thresholds for residuals then you could add horizontal lines at those points, e.g., to create a band around zero.**
+
+4. Why might you want to look at a frequency polygon of absolute residuals? What are the pros and cons compared to looking at the raw residuals?
+
+```{r}
+sim1 %>%
+  add_residuals(sim1_mod_loess) %>%
+  ggplot(aes(x = abs(resid))) +
+    geom_freqpoly()
+```
+
+```{r}
+sim1 %>%
+  add_residuals(sim1_mod_loess) %>%
+  ggplot(aes(x = x, y = resid)) +
+    geom_point()
+```
+
+**The frequency polygon of absolute residuals gives a way of focussing on any patterns in the overall magnitude of distances between predicted and observed values. If the model is accounting for the major patterns in the data then absolute residual values should be low and closr to zero. If there are high frequencies of larger residuals then the model is away from the observations in many places. On the other hand, the plot of raw residuals allows us to look for any patterns in the distribution of residuals across the range of scores in the distribution. In most cases the ideal (and in terms of statistical procedures, the assumption) is that residuals are evenly distributed across the range (and normally distributed at all points along the range). The random-looking spread of residuals above fits that expectation. But if a model is showing unusually high or low residuals in parts of the distribution that may be of interest and warrant more exploration.**
