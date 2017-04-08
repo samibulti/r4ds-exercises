@@ -248,3 +248,116 @@ mtcars
 ```
 
 **It transforms two variables in the `mtcars` data - `disp` is replaced by its original value multiplied by 0.0163871 (which searching suggests is the process to convert from cubic inches to litres), and `am` is converted from a numeric variable to a factor with `auto` and `manual` labels. It works by first creating a list thatcontains two elements, each of which is a function that definesthe necessary transformations. Then a for loopiterates across the names of those list elements (which correspond to the variable names in the dataset) and assigns to those variables the corresponding list element - which passes the original value in as an argument to be used within the function that is defined in the list element.**
+
+# 21.4 For loops vs. functionals
+
+## 21.4.1 Exercises
+
+1. Read the documentation for `apply()`. In the 2d case, what two for loops does it generalise?
+
+```{r}
+?apply
+```
+
+**It can apply functions to subscripts along the rows or the columns, so it appears to generalise `for (i in seq_along(xs))` as we've used it to iterate across columns. I'm not sure how to define the second loop type.**
+
+2. Adapt `col_summary()` so that it only applies to numeric columns. You might want to start with an `is_numeric()` function that returns a logical vector that has a `TRUE` corresponding to each numeric column.
+
+```{r}
+df <- tibble(
+  a = rnorm(10),
+  b = rnorm(10),
+  c = rnorm(10),
+  d = letters[1:10]
+)
+
+col_summary <- function(df, fun) {
+  isnum <- vector("logical", length(df))
+  for (i in seq_along(df)) {
+    isnum[[i]] = is_numeric(df[[i]])
+  }
+  out <- vector("double", length(df))
+  for (i in seq_along(df)) {
+    if (isnum[i]) {
+      out[i] <- fun(df[[i]])
+    } else {
+      out[i] <- NA
+    }
+  }
+  out
+}
+
+col_summary(df, mean)
+```
+
+# 21.5 The map functions
+
+## 21.5.3 Exercises
+
+1. Write code that uses one of the `map` functions to:
+
+  1. Compute the mean of every column in `mtcars`.
+  2. Determine the type of each column in `nycflights13::flights`.
+  3. Compute the number of unique values in each column of `iris`.
+  4. Generate 10 random normals for each of $\mu=−10$, $0$, $10$, and $100$.
+
+```{r}
+# NB: Restart session before running this chunk or the transformations to `mtcars` above will cause an error on the `am` column
+library(tidyverse)
+library(nycflights13)
+map_dbl(mtcars, mean)
+```
+
+```{r}
+map_chr(flights, typeof)
+```
+
+```{r}
+map_int(iris, ~length(unique(.)))
+```
+
+```{r}
+means <- c("-10" = -10, "0" = 0, "10" = 10, "100" = 100)
+map(means, rnorm, n = 10)
+```
+
+2. How can you create a single vector that for each column in a data frame indicates whether or not it’s a factor?
+
+```{r}
+map_lgl(iris, is.factor)
+```
+
+3. What happens when you use the map functions on vectors that aren’t lists? What does `map(1:5, runif)` do? Why?
+
+```{r}
+map(1:5, runif)
+```
+
+**It applies the mapped function to each element of the vector being passed in. In this case, `runif` runs to produce samples from size 1 up to size 5.**
+
+4. What does `map(-2:2, rnorm, n = 5)` do? Why? What does `map_dbl(-2:2, rnorm, n = 5)` do? Why?
+
+```{r}
+map(-2:2, rnorm, n = 5)
+```
+
+**It produces five random normal samples, each of size 5, but with the population mean for each sampling process being `-2`, `-1`, `0`, `1`, and `2`. The help for `rnorm` indicates that its function definition is `rnorm(n, mean = 0, sd = 1)` - it appears that because an `n` argument is passed through the `map` function, the vector being passed is used in the place of the next parameter which is `mean`.**
+
+```{r}
+map_dbl(-2:2, rnorm, n = 5)
+```
+
+**It produces an error because `map_dbl` expects a single value (length 1 atomic vector) to be produced by each function call, rather than a vector of multiple (5) numbers.**
+
+5. Rewrite `map(x, function(df) lm(mpg ~ wt, data = df))` to eliminate the anonymous function.
+
+```{r}
+map(mtcars, ~lm(mpg ~ wt, data = .))
+```
+
+**This appears not to work because `map` is being passed a single data frame rather than something to iterate over - compare with the example in this section where `mtcars` was passed through a `split` function call, which produced a list containing three data frames. We can create a single-item list containing our data frame, which will then be passed to the mapped function.**
+
+```{r}
+list(mtcars) %>%
+  map(~lm(mpg ~ wt, data = .))
+```
