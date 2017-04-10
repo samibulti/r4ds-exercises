@@ -126,3 +126,65 @@ sim1 %>%
 ```
 
 **The frequency polygon of absolute residuals gives a way of focussing on any patterns in the overall magnitude of distances between predicted and observed values. If the model is accounting for the major patterns in the data then absolute residual values should be low and closr to zero. If there are high frequencies of larger residuals then the model is away from the observations in many places. On the other hand, the plot of raw residuals allows us to look for any patterns in the distribution of residuals across the range of scores in the distribution. In most cases the ideal (and in terms of statistical procedures, the assumption) is that residuals are evenly distributed across the range (and normally distributed at all points along the range). The random-looking spread of residuals above fits that expectation. But if a model is showing unusually high or low residuals in parts of the distribution that may be of interest and warrant more exploration.**
+
+# 23.4 Formulas and model families
+
+## 23.4.5 Exercises
+
+1. What happens if you repeat the analysis of `sim2` using a model without an intercept. What happens to the model equation? What happens to the predictions?
+
+```{r}
+# Model with intercept
+model_matrix(sim2, y ~ x)
+# Model without intercept
+model_matrix(sim2, y ~ x -1)
+```
+
+**When the intercept is removed, an extra `xa` variable is added in its place.**
+
+```{r}
+mod2_noint <- lm(y ~ x - 1, data = sim2)
+
+grid_noint <- sim2 %>% 
+  data_grid(x) %>% 
+  add_predictions(mod2_noint)
+
+grid_noint
+```
+
+**The predictions are unchanged from the model with intercept.**
+
+```{r}
+mod2_int <- lm(y ~ x, data = sim2)
+
+mod2_int
+mod2_noint
+```
+
+**The `xa` variable has taken on the same value as the intercept had, and the other coefficients are now equal to their value in the original model plus the intercept. That makes sense when you review the model matrices above - the intercept was always added to predictions in all groups.**
+
+2. Use `model_matrix(`) to explore the equations generated for the models I fit to` sim3` and `sim4`. Why is `*` a good shorthand for interaction?
+
+```{r}
+model_matrix(sim3, y ~ x1 + x2)
+model_matrix(sim3, y ~ x1 * x2)
+model_matrix(sim4, y ~ x1 + x2)
+model_matrix(sim4, y ~ x1 * x2)
+```
+
+**In each row of the model matrix, the coefficient for an interaction (e.g., `x1:x2b`) is equal to the product of the corresponding individual coefficients (e.g., `x1 = 1`, `x2b = 0`, `x1:x2b = 0`).**
+
+3. Using the basic principles, convert the formulas in the following two models into functions. (Hint: start by converting the categorical variable into 0-1 variables.)
+
+```
+mod1 <- lm(y ~ x1 + x2, data = sim3)
+mod2 <- lm(y ~ x1 * x2, data = sim3)
+```
+
+**`y = a_0 + (a_1 * x1) + (a_2b * x2b) + (a_2c * x2c) + (a_2d + x_2d)`**
+
+**`y = a_0 + (a_1 * x1) + (a_2b * x2b) + (a_2c * x2c) + (a_2d + x_2d) + (a_12b * x1 * x2b) + (a_12c * x1 * x2c) + (a_12d * x1 * x2d)`**
+
+4. For `sim4`, which of `mod1` and `mod2` is better? I think `mod2` does a slightly better job at removing patterns, but it’s pretty subtle. Can you come up with a plot to support my claim?
+
+**I'll have to come back to this one a little later.**
