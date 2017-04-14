@@ -1,0 +1,123 @@
+---
+title: "Chapter 24: Model building"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(modelr)
+options(na.action = na.warn)
+
+library(nycflights13)
+library(lubridate)
+```
+
+# 24.2 Why are low quality diamonds more expensive?
+
+## 24.2.3 Exercises
+
+1. In the plot of `lcarat` vs. `lprice`, there are some bright vertical strips. What do they represent?
+
+**They are clusters of high-frequency values of `lcarat`. As noted in earlier chapters, the carat values have peaks at "nice" values.**
+
+2. If `log(price) = a_0 + a_1 * log(carat)`, what does that say about the relationship between price and carat?
+
+**The model we have specified here is a log-log model - some searching and reading shows that these are often used in economics relating to elasticity. The relationship is such that a given percentage change in carat `p%` will be associated with an `a_1 x p%` change in price.**
+
+3. Extract the diamonds that have very high and very low residuals. Is there anything unusual about these diamonds? Are the particularly bad or good, or do you think these are pricing errors?
+
+```{r}
+diamonds2 <- diamonds %>% 
+  filter(carat <= 2.5) %>% 
+  mutate(lprice = log2(price), lcarat = log2(carat))
+mod_diamond2 <- lm(lprice ~ lcarat + color + cut + clarity, data = diamonds2)
+diamonds2 <- diamonds2 %>% 
+  add_predictions(mod_diamond2, "lpred2") %>%
+  add_residuals(mod_diamond2, "lresid2")
+extreme_resids <- diamonds2 %>% 
+  filter(abs(lresid2) > 1) %>% 
+  add_predictions(mod_diamond2) %>% 
+  mutate(pred = round(2 ^ pred)) %>% 
+  select(price, pred, lresid2, carat:table, x:z) %>% 
+  arrange(desc(lresid2))
+extreme_resids
+```
+
+**The two cases where the residuals were extreme negative values (i.e., the model overestimated price) are diamonds greater than 1 carat but vary across other characteristics. For the cases where the model underestimated price it's not easy to tell whether there are specific characteristics that stand out just by looking at these ones - it's probably best to see whether they stand out compared to the rest of the dataset. Let's begin by coming up with a way to create plots that highlight those cases (using colour and transparency).**
+
+```{r}
+ggplot(data = diamonds2, aes(lpred2, price)) +
+  geom_jitter(aes(
+    colour = cut(lresid2, c(-Inf, -1, 1, Inf)),
+    alpha = cut(lresid2, c(-Inf, -1, 1, Inf))
+  )) +
+  scale_color_manual(
+    values = c(
+      "(-Inf,-1]" = "blue",
+      "(-1,1]" = "black",
+      "(1, Inf]" = "red"
+    )
+  ) +
+  scale_alpha_manual(
+    values = c(
+      "(-Inf,-1]" = 1,
+      "(-1,1]" = 0.1,
+      "(1, Inf]" = 1
+    )
+  )
+```
+
+**Now let's see if they stand out on any variables that weren't included in the model.**
+
+```{r}
+ggplot(data = diamonds2, aes(depth, table)) +
+  geom_jitter(aes(
+    colour = cut(lresid2, c(-Inf, -1, 1, Inf)),
+    alpha = cut(lresid2, c(-Inf, -1, 1, Inf))
+  )) +
+  scale_color_manual(
+    values = c(
+      "(-Inf,-1]" = "blue",
+      "(-1,1]" = "black",
+      "(1, Inf]" = "red"
+    )
+  ) +
+  scale_alpha_manual(
+    values = c(
+      "(-Inf,-1]" = 1,
+      "(-1,1]" = 0.1,
+      "(1, Inf]" = 1
+    )
+  )
+```
+
+**It's hard to pick out every one of our cases with extreme residuals here but it looks like some of them are toward the tails of the distribution on `depth` and/or `table`.**
+
+4. Does the final model, `mod_diamonds2`, do a good job of predicting diamond prices? Would you trust it to tell you how much to spend if you were buying a diamond?
+
+```{r}
+ggplot(diamonds2, aes(lresid2)) +
+  geom_freqpoly(bins = 100)
+```
+
+**Visual inspection suggests almost all of the residuals fall within +/- 0.5.**
+
+```{r}
+diamonds2 <- diamonds2 %>%
+  mutate(
+    pred = round(2 ^ lpred2),
+    diff = price - pred,
+    prop_diff = diff / price
+  )
+diamonds2 %>%
+  summarise(
+    m_diff = mean(prop_diff),
+    sd_diff = sd(prop_diff),
+    low_diff = quantile(prop_diff, .025),
+    high_diff = quantile(prop_diff, .975)
+  )
+ggplot(diamonds2, aes(price, prop_diff)) +
+  geom_point()
+```
+
+**It appears that 95% of predictions are within -29% to +23% of the price.Looking at the distribution it seems like the predictions might be a little less off the mark (as a proportion of price) with higher-value diamonds.**
