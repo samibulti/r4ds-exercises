@@ -1,0 +1,97 @@
+---
+title: "Chapter 28: Graphics for communication"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+```
+
+# 28.2 Label
+
+## 28.2.1 Exercises
+
+1. Create one plot on the fuel economy data with customised `title`, `subtitle`, `caption`, `x`, `y`, and `colour` labels.
+
+```{r}
+mpg %>%
+  ggplot(aes(displ, cty)) +
+    geom_point(aes(colour = drv)) +
+    geom_smooth(se = FALSE) +
+    labs(
+      title = "Fuel efficiency generally decreases with engine size",
+      subtitle = "Front-wheel drive cars tend to have smaller engines than rear-wheel drive cars",
+      caption = "Data source: fueleconomy.gov",
+      x = "Engine displacement (Litres)",
+      y = "City fuel efficiency (miles per gallon)",
+      colour = "F/R/4 wheel drive"
+    )
+```
+
+2. The `geom_smooth()` is somewhat misleading because the `hwy` for large engines is skewed upwards due to the inclusion of lightweight sports cars with big engines. Use your modelling tools to fit and display a better model.
+
+**Let's begin by fitting a linear model to the data using only engine displacement.**
+
+```{r}
+library(modelr)
+library(ggbeeswarm)
+mod1 <- lm(hwy ~ displ, data = mpg)
+mpg1 <- add_predictions(mpg, mod1)
+mpg1 <- add_residuals(mpg1, mod1)
+ggplot(mpg1, aes(displ, hwy)) +
+  geom_point(aes(colour = class)) +
+  geom_line(aes(y = pred)) +
+  labs(
+    title = "Fuel efficiency generally decreases with engine size",
+    subtitle = "But some vehicles don't come close to the line of best fit",
+    caption = "Data source: fueleconomy.gov",
+    x = "Engine displacement (litres)",
+    y = "Highway fuel efficiency (mpg)",
+    colour = "Vehicle class"
+  )
+ggplot(mpg1, aes(class, resid)) +
+  geom_beeswarm(aes(colour = class)) +
+  labs(
+    title = "2-seater cars fail to fit the model",
+    subtitle = "There are exceptions to the rule in certain other classes as well",
+    caption = "Data source: fueleconomy.gov",
+    x = "Vehicle class",
+    y = "Error in predicted mpg",
+    colour = "Vehicle class"
+  )
+```
+
+**We can see that there are elevated residuals for all vehicles in the 2-seater class, along with some outliers among the subcompact class (among others). Let's fit a second model that includes class as well as engine displacement.**
+
+```{r}
+mod2 <- lm(hwy ~ displ + class, data = mpg)
+mpg2 <- add_predictions(mpg, mod2)
+mpg2 <- add_residuals(mpg2, mod2)
+ggplot(mpg2, aes(displ, hwy, colour = class)) +
+  geom_point() +
+  geom_line(aes(y = pred)) +
+  labs(
+    title = "Fuel efficiency generally decreases with engine size",
+    subtitle = "Vehicle class can be included in the predictions",
+    caption = "Data source: fueleconomy.gov",
+    x = "Engine displacement (litres)",
+    y = "Highway fuel efficiency (mpg)",
+    colour = "Vehicle class"
+  )
+ggplot(mpg2, aes(class, resid)) +
+  geom_beeswarm(aes(colour = class)) +
+  labs(
+    title = "The revised model accounts for 2-seaters' fuel (in)efficiency",
+    subtitle = "Exceptions in the compact and subcompact classes remain",
+    caption = "Data source: fueleconomy.gov",
+    x = "Vehicle class",
+    y = "Error in predicted mpg",
+    colour = "Vehicle class"
+  )
+```
+
+**This model works much better for addressing the 2-seater vehicles. Note that we could have used an interaction between displacement and class - I tested this out but the result doesn't seem much improved over this model. Also note that there are still some vehicles among the compact and subcompact classes that the model doesn't do a good job of fitting, which could warrant further investigation.**
+
+3. Take an exploratory graphic that you’ve created in the last month, and add informative titles to make it easier for others to understand.
+
+**This is something I'll come back to as I work on other projects after working through this book.**
