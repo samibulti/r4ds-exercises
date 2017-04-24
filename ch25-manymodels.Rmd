@@ -1,0 +1,132 @@
+---
+title: "Chapter 25: Many models"
+output: html_notebook
+---
+
+```{r}
+library(modelr)
+library(tidyverse)
+library(gapminder)
+```
+
+# 25.2 gapminder
+
+## 25.2.2 Exercises
+
+1. A linear trend seems to be slightly too simple for the overall trend. Can you do better with a quadratic polynomial? How can you interpret the coefficients of the quadratic? (Hint you might want to transform year so that it has mean zero.)
+
+```{r}
+gapminder <- gapminder %>%
+  mutate(year = year - mean(year))
+
+by_country <- gapminder %>% 
+  group_by(country, continent) %>% 
+  nest()
+
+country_model <- function(df) {
+  lm(lifeExp ~ poly(year, 2), data = df)
+}
+
+by_country <- by_country %>% 
+  mutate(
+    model = map(data, country_model),
+    preds = map2(data, model, add_predictions),
+    resids = map2(data, model, add_residuals)
+  )
+
+preds <- unnest(by_country, preds)
+resids <- unnest(by_country, resids)
+
+ggplot(preds, aes(year, pred)) +
+  geom_line(aes(group = country), alpha = 1/3) +
+  facet_wrap(~continent)
+
+ggplot(resids, aes(year, resid)) +
+  geom_line(aes(group = country), alpha = 1/3) +
+  facet_wrap(~continent)
+```
+
+**Many of the quadratic models have very little curve to the line and generally present a near-linear trend, but it's clear that for some countries (especially in Africa, and to some extent in Asia) the model that predicted life expectancy rose to a peak and then has begun to decline again. Comparing these residual plots with the linear model, the extreme events such as the Rwandan genocide still produce large residuals as they can't be accounted for by a model based on overall passage of time, but in general terms the quadratic model appears to have produced narrower bands for most of the residuals.**
+
+```{r}
+glance <- by_country %>% 
+  mutate(glance = map(model, broom::glance)) %>% 
+  unnest(glance, .drop = TRUE)
+glance %>% 
+  arrange(r.squared)
+glance %>% 
+  ggplot(aes(continent, r.squared)) + 
+    geom_jitter(width = 0.5)
+```
+
+**The R-squared values show that although the quadratic model does a poor job with Rwanda (as noted above), it does considerably better with most of the other African countries than the linear model did -- presumably because the peak-and-decline represents the polynomial model fitting itself to the HIV/AIDS epidemic. It's interesting that Cambodia is now one of the worst-fitting models -- I'd suspect that the big negative residual visible in the Asia plot above is Cambodia and the dip is the time of the Khmer Rouge. Let's take a look at the weaker-fitting models (I'll use a threshold of 0.75).**
+
+```{r}
+weak_fit <- filter(glance, r.squared < 0.75)
+
+gapminder %>% 
+  semi_join(weak_fit, by = "country") %>% 
+  ggplot(aes(year, lifeExp, colour = country)) +
+    geom_line()
+```
+
+**The list-column of models in the nested data frame will include their coefficients (quadratic, linear and intercept). A search took me to [this post](https://blog.rstudio.org/2016/02/02/tidyr-0-4-0/) that includes an example of how to extract the coefficients using `broom`.**
+
+```{r}
+coefs <- by_country %>%
+  unnest(model %>% map(broom::tidy))
+quad <- coefs %>%
+  filter(term == "poly(year, 2)2")
+arrange(quad, estimate)
+```
+
+**The quadratic coefficient indicates the change in the rate of life expectancy change over time. The strong negative coefficients should be those countries that have had a peak and then decline -- a plot of the strongest quadratic coefficients should demonstrate this.**
+
+```{r}
+strong_quadratic <- quad %>%
+  filter(estimate < -12)
+gapminder %>% 
+  semi_join(strong_quadratic, by = "country") %>% 
+  ggplot(aes(year, lifeExp, colour = country)) +
+    geom_line()
+```
+
+```{r}
+lin <- coefs %>%
+  filter(term == "poly(year, 2)1")
+arrange(lin, desc(estimate))
+```
+
+**Having selected the linear coefficients, we can plot the strongest ones and should expect to see solid linear increases in life expectancy.**
+
+```{r}
+strong_linear <- lin %>%
+  filter(estimate > 35)
+gapminder %>% 
+  semi_join(strong_linear, by = "country") %>% 
+  ggplot(aes(year, lifeExp, colour = country)) +
+    geom_line()
+```
+
+2. Explore other methods for visualising the distribution of  R2R2  per continent. You might want to try the ggbeeswarm package, which provides similar methods for avoiding overlaps as jitter, but uses deterministic methods.
+
+```{r}
+library(ggbeeswarm)
+glance %>% 
+  ggplot(aes(continent, r.squared)) +
+  geom_beeswarm()
+```
+
+3. To create the last plot (showing the data for the countries with the worst model fits), we needed two steps: we created a data frame with one row per country and then semi-joined it to the original dataset. It’s possible avoid this join if we use unnest() instead of unnest(.drop = TRUE). How?
+
+**I'll produce this one-step solution using the quadratic models and my 0.75 threshold. By not dropping the other columns we have the original data still included, so once we unnest the summary statistics and filter to select the weakest-fitting models we can then pull out the data and plot without needing to join with the original data set.**
+
+```{r}
+by_country %>% 
+  mutate(glance = map(model, broom::glance)) %>% 
+  unnest(glance) %>%
+  filter(r.squared < 0.75) %>%
+  unnest(data) %>%
+  ggplot(aes(year, lifeExp, colour = country)) +
+    geom_line()
+```
