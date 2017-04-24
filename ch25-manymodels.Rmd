@@ -130,3 +130,54 @@ by_country %>%
   ggplot(aes(year, lifeExp, colour = country)) +
     geom_line()
 ```
+
+# 25.4 Creating list-columns
+
+# 25.4.5 Exercises
+
+1. List all the functions that you can think of that take a atomic vector and return a list.
+
+**As well as `str_split` mentioned in the chapter, `lm` returns a list (containing coefficients, residuals, etc.).**
+
+2. Brainstorm useful summary functions that, like quantile(), return multiple values.
+
+**`range` returns the minimum and maximum.**
+
+3. What’s missing in the following data frame? How does quantile() return that missing piece? Why isn’t that helpful here?
+
+```{r}
+mtcars %>% 
+  group_by(cyl) %>% 
+  summarise(q = list(quantile(mpg))) %>% 
+  unnest()
+```
+
+**The percentile value each row corresponds to is missing.**
+
+```{r}
+str(quantile(mtcars$mpg))
+```
+
+**`quantile()` returns them as the names of the elements in the vector. That isn't helpful here because `unnest()` drops the names.**
+
+4. What does this code do? Why might might it be useful?
+
+```{r}
+mtcars %>% 
+  group_by(cyl) %>% 
+  summarise_each(funs(list))
+```
+
+**It creates list-columns for each column in the data set with the values for each number of cylinders grouped into a single row. This gives you all of the values on a given variable for a given `cyl` value as a vector. I might need to think more on how this could be useful.**
+
+# 25.5 Simplifying list-columns
+
+## 25.5.3 Exercises
+
+1. Why might the `lengths()` function be useful for creating atomic vector columns from list-columns?
+
+**`lengths()` gets the length of each element of a list or atomic vector. I would assume you could use that for filtering or verifying that the elements have the same length to prevent the error discussed in the chapter.**
+
+2. List the most common types of vector found in a data frame. What makes lists different?
+
+**The major vector types are logical, integer, numeric, and character (string). The difference between them and lists is that each element of the atomic vectors is a single value and all of those values are of the same type, whereas lists can have multiple items per element and the elements can be of diferent types.**
