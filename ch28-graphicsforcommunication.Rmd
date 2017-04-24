@@ -200,3 +200,148 @@ ggplot(mpg, aes(displ, hwy, colour = class)) +
   )
 ```
 
+# 28.4 Scales
+
+## 28.4.4 Exercises
+
+1. Why doesn’t the following code override the default scale?
+
+```{r}
+# Create a sample data frame to run the code
+df <- tibble(
+  x = rnorm(1000),
+  y = rnorm(1000)
+)
+ggplot(df, aes(x, y)) +
+  geom_hex() +
+  scale_colour_gradient(low = "white", high = "red") +
+  coord_fixed()
+```
+
+**The `viridis` example just above the exercises used `scale_fill_viridis` rather than `scale_colour_viridis` - it looks like this code was targeting the wrong property.**
+
+```{r}
+ggplot(df, aes(x, y)) +
+  geom_hex() +
+  scale_fill_gradient(low = "white", high = "red") +
+  coord_fixed()
+```
+
+
+2. What is the first argument to every scale? How does it compare to `labs()`?
+
+```{r}
+ggplot(df, aes(x, y)) +
+  geom_hex() +
+  scale_fill_gradient("First argument", low = "white", high = "red") +
+  coord_fixed()
+```
+
+**The first argument becomes the name/label of the scale.**
+
+3. Change the display of the presidential terms by:
+
+  1. Combining the two variants shown above.
+  2. Improving the display of the y axis.
+  3. Labelling each term with the name of the president.
+  4. Adding informative plot labels.
+  5. Placing breaks every 4 years (this is trickier than it seems!).
+
+**NB: I'll make the improvements incremental where possible so that later plots have some of the features from the earlier ones.**
+
+```{r}
+# 1. Combining the two variants shown above
+presidential %>%
+  mutate(id = 33 + row_number()) %>%
+  ggplot(aes(start, id, colour = party)) +
+    geom_point() +
+    geom_segment(aes(xend = end, yend = id)) +
+    scale_x_date(NULL, breaks = presidential$start, date_labels = "'%y") +
+    scale_colour_manual(values = c(Republican = "red", Democratic = "blue"))
+```
+
+```{r}
+# 2. Improving the display of the y axis
+presidential %>%
+  mutate(id = 33 + row_number()) %>%
+  ggplot(aes(start, id, colour = party)) +
+    geom_point() +
+    geom_segment(aes(xend = end, yend = id)) +
+    scale_x_date(NULL, breaks = presidential$start, date_labels = "'%y") +
+    scale_y_continuous("President", breaks = seq(34, 44, by = 1)) +
+    scale_colour_manual(values = c(Republican = "red", Democratic = "blue"))
+```
+
+```{r}
+# 3. Labelling each term with the name of the president
+presidential %>%
+  mutate(id = 33 + row_number()) %>%
+  ggplot(aes(start, id, colour = party)) +
+    geom_point() +
+    geom_segment(aes(xend = end, yend = id)) +
+    scale_x_date(NULL, breaks = presidential$start, date_labels = "'%y") +
+    scale_y_continuous("President", labels = presidential$name, breaks = seq(34, 44, by = 1)) +
+    scale_colour_manual(values = c(Republican = "red", Democratic = "blue"))
+```
+
+**This replaces the number with the name, but means there are two Bushes not distinguished. Let's try to get the name and number combined.**
+
+```{r}
+library(stringr)
+presidential %>%
+  mutate(id = 33 + row_number()) %>%
+  ggplot(aes(start, id, colour = party)) +
+    geom_point() +
+    geom_segment(aes(xend = end, yend = id)) +
+    scale_x_date(NULL, breaks = presidential$start, date_labels = "'%y") +
+    scale_y_continuous("President", labels = str_c(presidential$name, " (", seq(34, 44, by = 1), ")"), breaks = seq(34, 44, by = 1)) +
+    scale_colour_manual(values = c(Republican = "red", Democratic = "blue"))
+```
+
+```{r}
+# 4. Adding informative plot labels
+presidential %>%
+  mutate(id = 33 + row_number()) %>%
+  ggplot(aes(start, id, colour = party)) +
+    geom_point() +
+    geom_segment(aes(xend = end, yend = id)) +
+    scale_x_date(NULL, breaks = presidential$start, date_labels = "'%y") +
+    scale_y_continuous("President", labels = str_c(presidential$name, " (", seq(34, 44, by = 1), ")"), breaks = seq(34, 44, by = 1)) +
+    scale_colour_manual(values = c(Republican = "red", Democratic = "blue")) +
+  labs(
+    title = "Terms of 11 U.S. Presidents",
+    subtitle = "from Eisenhower to Obama",
+    colour = "Party"
+  )
+```
+
+```{r}
+# 5. Placing breaks every 4 years (this is trickier than it seems!)
+library(lubridate)
+presidential %>%
+  mutate(id = 33 + row_number()) %>%
+  ggplot(aes(start, id, colour = party)) +
+    geom_point() +
+    geom_segment(aes(xend = end, yend = id)) +
+    scale_x_date(NULL, breaks = make_date(seq(min(year(presidential$start)), max(year(presidential$end)), by = 4)), date_labels = "'%y") +
+    scale_y_continuous("President", labels = str_c(presidential$name, " (", seq(34, 44, by = 1), ")"), breaks = seq(34, 44, by = 1)) +
+    scale_colour_manual(values = c(Republican = "red", Democratic = "blue")) +
+  labs(
+    title = "Terms of 11 U.S. Presidents",
+    subtitle = "from Eisenhower to Obama",
+    colour = "Party"
+  )
+```
+
+4. Use `override.aes` to make the legend on the following plot easier to see.
+
+```{r}
+ggplot(diamonds, aes(carat, price)) +
+  geom_point(aes(colour = cut), alpha = 1/20)
+```
+
+```{r}
+ggplot(diamonds, aes(carat, price)) +
+  geom_point(aes(colour = cut), alpha = 1/20) +
+  guides(colour = guide_legend(override.aes = list(alpha = 1)))
+```
