@@ -95,3 +95,108 @@ ggplot(mpg2, aes(class, resid)) +
 3. Take an exploratory graphic that you’ve created in the last month, and add informative titles to make it easier for others to understand.
 
 **This is something I'll come back to as I work on other projects after working through this book.**
+
+# 28.3 Annotations
+
+## 28.3.1 Exercises
+
+1. Use `geom_text()` with infinite positions to place text at the four corners of the plot.
+
+```{r}
+labels <- tibble(
+  x = c(-Inf, -Inf, Inf, Inf),
+  y = c(Inf, -Inf, Inf, -Inf),
+  lab = c("Top-Left", "Bottom-Left", "Top-Right", "Bottom-Right"),
+  v = c("top", "bottom", "top", "bottom"),
+  h = c("left", "left", "right", "right")
+)
+ggplot(data = mpg, aes(displ, hwy)) +
+  geom_point(aes(colour = class)) +
+  geom_text(aes(x = x, y = y, label = lab, vjust = v, hjust = h), data = labels)
+```
+
+2. Read the documentation for `annotate()`. How can you use it to add a text label to a plot without having to create a tibble?
+
+```{r}
+?annotate
+
+ggplot(data = mpg, aes(displ, hwy)) +
+  geom_point(aes(colour = class)) +
+  annotate(
+    "text",
+    label = "Increasing engine size is\nrelated to decreasing fuel economy",
+    x = Inf,
+    y = Inf,
+    vjust = "top",
+    hjust = "right"
+  )
+```
+
+3. How do labels with `geom_text()` interact with faceting? How can you add a label to a single facet? How can you put a different label in each facet? (Hint: think about the underlying data.)
+
+```{r}
+label <- tibble(
+  displ = Inf,
+  hwy = Inf,
+  label = "Increasing engine size is \nrelated to decreasing fuel economy."
+)
+
+ggplot(data = mpg, aes(displ, hwy)) +
+  geom_point(aes(colour = class)) +
+  geom_text(aes(label = label), data = label, vjust = "top", hjust = "right") +
+  facet_grid( cyl ~ . )
+```
+
+**By default the single label will appear on each facet's plot. To get a different label on each plot we need to set up the labels so they will correspond to the variable(s) by which we're faceting.**
+
+```{r}
+facet_labels <- tibble(
+  cyl = c(4, 5, 6, 8),
+  displ = Inf,
+  hwy = Inf,
+  label = c("4 cylinders", "5 cylinders", "6 cylinders", "8 cylinders")
+)
+
+ggplot(data = mpg, aes(displ, hwy)) +
+  geom_point(aes(colour = class)) +
+  geom_text(aes(label = label), data = facet_labels, vjust = "top", hjust = "right") +
+  facet_grid( cyl ~ . )
+```
+
+4. What arguments to `geom_label()` control the appearance of the background box?
+
+```{r}
+?geom_label
+```
+
+**`label.padding`, `label.r` and `label.size` control the padding, radius of corners and border size.**
+
+5. What are the four arguments to `arrow()`? How do they work? Create a series of plots that demonstrate the most important options.
+
+```{r}
+?arrow
+```
+
+**The arguments are `angle` (angle/width of the arrow head - defaults to 30 degrees), `length` (of the arrow head - defaults to 0.25 inches), `ends` (which end/s of the line to draw the head on - "first", "last", or "both - defaults to "last"), and `type` ("open" or "closed" triangle - defaults to open).**
+
+```{r}
+ggplot(mpg, aes(displ, hwy, colour = class)) +
+  geom_point() +
+  geom_segment(
+    aes(x = 6.5, y = 40, xend = 6, yend = 27),
+    arrow = arrow(type = "closed")
+  )
+ggplot(mpg, aes(displ, hwy, colour = class)) +
+  geom_point() +
+  geom_segment(
+    aes(x = 6.5, y = 40, xend = 6, yend = 27),
+    arrow = arrow(length = unit(0.1, "inches"), ends = "first")
+  )
+ggplot(mpg, aes(displ, hwy, colour = class)) +
+  geom_point() +
+  geom_segment(
+    aes(x = 6.5, y = 40, xend = 6, yend = 27),
+    arrow = arrow(ends = "both", angle = 90)
+  )
+```
+
