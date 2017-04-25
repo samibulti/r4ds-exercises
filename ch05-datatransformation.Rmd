@@ -360,6 +360,8 @@ ggplot(data = airline_dest_delays) +
 
 6. For each plane, count the number of flights before the first delay of greater than 1 hour.
 
+**I haven't been able to find a way to select only the cases that come before a 60+ minute delay for each plane. I will need to give some more thought to this.**
+
 7. What does the sort argument to `count()` do. When might you use it?
 
 **If `sort = TRUE` then the `count()` function arranges its output in descending order. I would use it when you want to find the most frequent values, as it saves piping the `count()` results into an `arrange()` call.**
@@ -367,3 +369,144 @@ ggplot(data = airline_dest_delays) +
 ```{r}
 not_cancelled %>% count(dest, sort = TRUE)
 ```
+
+# 5.7 Grouped mutates (and filters)
+
+## 5.7.1 Exercises
+
+1. Refer back to the table of useful mutate and filtering functions. Describe how each operation changes when you combine it with grouping.
+
+**The mutate functions will calculate values within groups. Let's start by calculating the difference between each flight's delay and the overall average flight delay.**
+
+```{r}
+flights %>%
+  mutate(
+    delay_diff = arr_delay - mean(arr_delay, na.rm = TRUE)
+  ) %>%
+  select(
+    carrier,
+    tailnum,
+    flight,
+    arr_delay,
+    delay_diff
+  )
+```
+
+**Now if we insert a requirement to group by the date of the flights, we'll instead get the difference between the flight's delay and the average flight delay _on that date_.**
+
+```{r}
+flights %>%
+  group_by(year, month, day) %>%
+  mutate(
+    delay_diff = arr_delay - mean(arr_delay, na.rm = TRUE)
+  ) %>%
+  select(
+    carrier,
+    tailnum,
+    flight,
+    arr_delay,
+    delay_diff
+  )
+```
+
+2. Which plane (`tailnum`) has the worst on-time record?
+
+```{r}
+flights %>%
+  group_by(tailnum) %>%
+  summarise(avg_delay = mean(arr_delay, na.rm = TRUE), n = n()) %>%
+  filter(rank(desc(avg_delay)) == 1)
+```
+
+**This plane only had a single flight, however. Let's rule out planes that haven't flown somewhat regularly.**
+
+```{r}
+flights %>%
+  group_by(tailnum) %>%
+  summarise(avg_delay = mean(arr_delay, na.rm = TRUE), n = n()) %>%
+  filter(n >= 30) %>%
+  filter(rank(desc(avg_delay)) == 1)
+```
+
+3. What time of day should you fly if you want to avoid delays as much as possible?
+
+```{r}
+flights %>%
+  group_by(hour) %>%
+  summarise(avg_delay = mean(arr_delay, na.rm = TRUE)) %>%
+  ggplot(aes(hour, avg_delay)) +
+  geom_line()
+```
+
+**Flying at the start of the day (before 8am) is best for minimising delays.**
+
+4. For each destination, compute the total minutes of delay. For each, flight, compute the proportion of the total delay for its destination.
+
+```{r}
+flights %>%
+  group_by(dest) %>%
+  mutate(
+    total_delay = sum(arr_delay, na.rm = TRUE),
+    prop_delay = arr_delay / total_delay
+  )
+```
+
+5. Delays are typically temporally correlated: even once the problem that caused the initial delay has been resolved, later flights are delayed to allow earlier flights to leave. Using lag() explore how the delay of a flight is related to the delay of the immediately preceding flight.
+
+```{r}
+flights %>%
+  group_by(year, month, day, origin) %>%
+  mutate(prev_delay = lag(dep_delay)) %>%
+  ggplot(aes(prev_delay, dep_delay)) +
+    geom_point(alpha = 0.1) +
+    geom_smooth(method = lm, se = FALSE)
+```
+
+**It isn't an incredibly clear relationship and doesn't apear to apply in the case of extreme delays that are more likely to be the result of something unique to that flight/plane, but there is some observable relationship.**
+
+6. Look at each destination. Can you find flights that are suspiciously fast? (i.e. flights that represent a potential data entry error). Compute the air time a flight relative to the shortest flight to that destination. Which flights were most delayed in the air?
+
+```{r}
+flights %>%
+  group_by(dest) %>%
+  mutate(
+    median_airtime = median(air_time, na.rm = TRUE), # Using median because extreme delays may reduce the mean's representativeness
+    rel_airtime = air_time / median_airtime) %>% 
+  filter(rel_airtime <= 0.6)
+```
+
+**I set an arbitrary threshold but it picks up 3 flights that took 60% of the typical time for those flights.**
+
+```{r}
+flights %>%
+  group_by(dest) %>%
+  mutate(airtime_delay = air_time - min(air_time)) %>%
+  arrange(desc(airtime_delay))
+```
+
+7. Find all destinations that are flown by at least two carriers. Use that information to rank the carriers.
+
+```{r}
+dest_multicarriers <- flights %>%
+  group_by(dest) %>%
+  summarise(carriers = n_distinct(carrier)) %>%
+  filter(carriers >= 2)
+dest_multicarriers
+```
+
+**It's not clear what criterion this exercise expects the carriers to be ranked on. It could be just on how many of these destinations each carrier services.**
+
+```{r}
+flights %>%
+  filter(dest %in% dest_multicarriers$dest) %>%
+  group_by(carrier) %>%
+  summarise(dests = n_distinct(dest)) %>%
+  filter(rank(desc(dests)) == 1)
+```
+
+```{r}
+airlines %>%
+  filter(carrier == "EV")
+```
+
+**ExpressJet compete with other airlines in flights to 51 different destinations, the most of any airline.**
